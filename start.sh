@@ -30,7 +30,7 @@ if [ ! -d "frontend/node_modules" ]; then
         # 检查是否安装了 npm
         if command -v npm &> /dev/null; then
             echo "使用本地 npm 安装..."
-            cd frontend && npm install && cd ..
+            cd frontend && npm install --legacy-peer-deps && cd ..
         else
             echo "⚠️  未检测到 npm，使用 Docker 容器安装..."
             
@@ -42,7 +42,7 @@ if [ ! -d "frontend/node_modules" ]; then
             fi
             
             # 使用 Docker 容器安装依赖
-            docker run --rm -v $(pwd)/frontend:/app -w /app node:18-alpine npm install
+            docker run --rm -v $(pwd)/frontend:/app -w /app node:18-alpine npm install --legacy-peer-deps
         fi
         
         if [ $? -ne 0 ]; then
@@ -53,9 +53,9 @@ if [ ! -d "frontend/node_modules" ]; then
     else
         echo "⚠️  跳过依赖安装，Docker构建可能失败"
         if command -v npm &> /dev/null; then
-            echo "建议先运行: cd frontend && npm install && cd .."
+            echo "建议先运行: cd frontend && npm install --legacy-peer-deps && cd .."
         else
-            echo "建议先运行: docker run --rm -v \$(pwd)/frontend:/app -w /app node:18-alpine npm install"
+            echo "建议先运行: docker run --rm -v \$(pwd)/frontend:/app -w /app node:18-alpine npm install --legacy-peer-deps"
         fi
     fi
     echo ""

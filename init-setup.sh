@@ -27,7 +27,7 @@ if [ ! -d "node_modules" ]; then
     # 检查是否安装了 npm
     if command -v npm &> /dev/null; then
         echo "使用本地 npm 安装..."
-        npm install
+        npm install --legacy-peer-deps
         if [ $? -ne 0 ]; then
             echo "❌ npm 安装失败"
             exit 1
@@ -43,7 +43,7 @@ if [ ! -d "node_modules" ]; then
         fi
         
         # 使用 Docker 容器安装依赖
-        docker run --rm -v $(pwd):/app -w /app node:18-alpine npm install
+        docker run --rm -v $(pwd):/app -w /app node:18-alpine npm install --legacy-peer-deps
         if [ $? -ne 0 ]; then
             echo "❌ Docker 安装依赖失败"
             exit 1
@@ -59,9 +59,9 @@ fi
 if [ ! -f "package-lock.json" ]; then
     echo "正在生成 package-lock.json..."
     if command -v npm &> /dev/null; then
-        npm install
+        npm install --legacy-peer-deps
     else
-        docker run --rm -v $(pwd):/app -w /app node:18-alpine npm install
+        docker run --rm -v $(pwd):/app -w /app node:18-alpine npm install --legacy-peer-deps
     fi
     echo "✅ package-lock.json 已生成"
 fi

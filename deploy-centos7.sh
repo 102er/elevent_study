@@ -61,7 +61,7 @@ if [ ! -d "frontend/node_modules" ]; then
     echo "这可能需要几分钟，请耐心等待..."
     echo ""
     
-    docker run --rm -v $(pwd)/frontend:/app -w /app node:18-alpine npm install
+    docker run --rm -v $(pwd)/frontend:/app -w /app node:18-alpine npm install --legacy-peer-deps
     
     if [ $? -ne 0 ]; then
         echo "❌ 前端依赖安装失败"

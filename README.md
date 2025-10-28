@@ -54,18 +54,37 @@
 
 ## 🚀 快速开始
 
-### 方式一：Docker部署（推荐）
-
-适用于生产环境，在Linux服务器上一键部署。
+### 方式一：一键部署（最简单）
 
 ```bash
-# 1. 克隆代码
-git clone <repository-url>
+# 1. 进入项目目录
 cd eleven_study
 
+# 2. 运行初始化脚本
+./init-setup.sh
+
+# 3. 启动服务
+docker compose up -d
+
+# 4. 访问应用
+# 浏览器打开: http://localhost
+```
+
+**遇到问题？** 查看 [QUICKSTART.md](./QUICKSTART.md) 快速开始指南
+
+### 方式二：Docker部署（生产环境）
+
+适用于Linux服务器部署。
+
+```bash
+# 1. 安装前端依赖
+cd frontend && npm install && cd ..
+
 # 2. 配置环境变量
-cp .env.example .env
-# 编辑.env文件，设置MySQL密码
+cat > .env << EOF
+MYSQL_ROOT_PASSWORD=your_secure_password
+VITE_API_URL=/api
+EOF
 
 # 3. 启动所有服务
 docker compose up -d
@@ -74,9 +93,9 @@ docker compose up -d
 # 浏览器打开: http://your-server-ip/
 ```
 
-详细部署文档请查看：[DEPLOYMENT.md](./DEPLOYMENT.md)
+**详细部署文档**: [DEPLOYMENT.md](./DEPLOYMENT.md)
 
-### 方式二：本地开发
+### 方式三：本地开发
 
 #### 前端开发
 

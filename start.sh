@@ -3,6 +3,8 @@
 echo "🌈 儿童识字乐园 - 快速启动脚本"
 echo "================================"
 echo ""
+echo "💡 提示：如果是首次部署，请先运行: ./init-setup.sh"
+echo ""
 
 # 检查Docker是否安装
 if ! command -v docker &> /dev/null; then
@@ -14,6 +16,27 @@ fi
 if ! docker compose version &> /dev/null; then
     echo "❌ Docker Compose未安装，请先安装Docker Compose"
     exit 1
+fi
+
+# 检查前端依赖是否已安装
+if [ ! -d "frontend/node_modules" ]; then
+    echo "⚠️  警告：未找到前端依赖！"
+    echo ""
+    read -p "是否现在安装前端依赖？(y/n) " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        echo "正在安装前端依赖..."
+        cd frontend && npm install && cd ..
+        if [ $? -ne 0 ]; then
+            echo "❌ 依赖安装失败"
+            exit 1
+        fi
+        echo "✅ 依赖安装完成"
+    else
+        echo "⚠️  跳过依赖安装，Docker构建可能失败"
+        echo "建议先运行: cd frontend && npm install && cd .."
+    fi
+    echo ""
 fi
 
 # 检查.env文件是否存在

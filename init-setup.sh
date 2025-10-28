@@ -23,10 +23,32 @@ fi
 # 检查node_modules是否存在
 if [ ! -d "node_modules" ]; then
     echo "正在安装前端依赖..."
-    npm install
-    if [ $? -ne 0 ]; then
-        echo "❌ 前端依赖安装失败"
-        exit 1
+    
+    # 检查是否安装了 npm
+    if command -v npm &> /dev/null; then
+        echo "使用本地 npm 安装..."
+        npm install
+        if [ $? -ne 0 ]; then
+            echo "❌ npm 安装失败"
+            exit 1
+        fi
+    else
+        echo "⚠️  未检测到 npm，使用 Docker 容器安装..."
+        
+        # 检查 Docker 是否可用
+        if ! command -v docker &> /dev/null; then
+            echo "❌ Docker 未安装，无法继续"
+            echo "请先安装 Docker 或 Node.js"
+            exit 1
+        fi
+        
+        # 使用 Docker 容器安装依赖
+        docker run --rm -v $(pwd):/app -w /app node:18-alpine npm install
+        if [ $? -ne 0 ]; then
+            echo "❌ Docker 安装依赖失败"
+            exit 1
+        fi
+        echo "✅ 使用 Docker 安装依赖成功"
     fi
     echo "✅ 前端依赖安装完成"
 else
@@ -36,7 +58,11 @@ fi
 # 生成package-lock.json（如果不存在）
 if [ ! -f "package-lock.json" ]; then
     echo "正在生成 package-lock.json..."
-    npm install
+    if command -v npm &> /dev/null; then
+        npm install
+    else
+        docker run --rm -v $(pwd):/app -w /app node:18-alpine npm install
+    fi
     echo "✅ package-lock.json 已生成"
 fi
 

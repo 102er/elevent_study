@@ -26,7 +26,25 @@ if [ ! -d "frontend/node_modules" ]; then
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         echo "正在安装前端依赖..."
-        cd frontend && npm install && cd ..
+        
+        # 检查是否安装了 npm
+        if command -v npm &> /dev/null; then
+            echo "使用本地 npm 安装..."
+            cd frontend && npm install && cd ..
+        else
+            echo "⚠️  未检测到 npm，使用 Docker 容器安装..."
+            
+            # 检查 Docker 是否可用
+            if ! command -v docker &> /dev/null; then
+                echo "❌ Docker 未安装，无法继续"
+                echo "请先安装 Docker 或 Node.js"
+                exit 1
+            fi
+            
+            # 使用 Docker 容器安装依赖
+            docker run --rm -v $(pwd)/frontend:/app -w /app node:18-alpine npm install
+        fi
+        
         if [ $? -ne 0 ]; then
             echo "❌ 依赖安装失败"
             exit 1
@@ -34,7 +52,11 @@ if [ ! -d "frontend/node_modules" ]; then
         echo "✅ 依赖安装完成"
     else
         echo "⚠️  跳过依赖安装，Docker构建可能失败"
-        echo "建议先运行: cd frontend && npm install && cd .."
+        if command -v npm &> /dev/null; then
+            echo "建议先运行: cd frontend && npm install && cd .."
+        else
+            echo "建议先运行: docker run --rm -v \$(pwd)/frontend:/app -w /app node:18-alpine npm install"
+        fi
     fi
     echo ""
 fi

@@ -5,6 +5,7 @@ import WordLibrary from './components/WordLibrary'
 import LearningMode from './components/LearningMode'
 import RewardSystem from './components/RewardSystem'
 import WeeklyStats from './components/WeeklyStats'
+import ReadingManagement from './components/ReadingManagement'
 import { wordAPI, learningAPI, starAPI } from './services/api'
 
 function App() {
@@ -173,6 +174,10 @@ function App() {
           
           {currentView === 'rewards' && (
             <RewardSystem stars={stars} />
+          )}
+
+          {currentView === 'reading' && (
+            <ReadingManagement />
           )}
 
           {currentView === 'weekly' && (

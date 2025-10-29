@@ -58,6 +58,33 @@ class StarRecord(db.Model):
     stars = db.Column(db.Integer, default=0, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+class Book(db.Model):
+    """书籍表"""
+    __tablename__ = 'books'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    author = db.Column(db.String(100))
+    cover_color = db.Column(db.String(20), default='blue')
+    total_pages = db.Column(db.Integer, default=0)
+    description = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # 关联阅读记录
+    reading_records = db.relationship('ReadingRecord', backref='book', lazy=True, cascade='all, delete-orphan')
+
+class ReadingRecord(db.Model):
+    """阅读记录表"""
+    __tablename__ = 'reading_records'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    book_id = db.Column(db.Integer, db.ForeignKey('books.id'), nullable=False)
+    is_completed = db.Column(db.Boolean, default=False, nullable=False)
+    current_page = db.Column(db.Integer, default=0)
+    started_at = db.Column(db.DateTime, default=datetime.utcnow)
+    completed_at = db.Column(db.DateTime)
+    notes = db.Column(db.Text)
+
 # 辅助函数
 def get_week_dates(year, week):
     """根据年份和周数获取该周的起止日期"""
@@ -279,6 +306,203 @@ def get_current_week_stats():
         'startDate': first_day.strftime('%Y-%m-%d'),
         'endDate': last_day.strftime('%Y-%m-%d'),
         'label': f'{year}年第{week}周'
+    })
+
+# ====================
+# 书籍管理 API
+# ====================
+
+@app.route('/api/books', methods=['GET'])
+def get_books():
+    """获取所有书籍及其阅读状态"""
+    books = Book.query.order_by(Book.created_at.desc()).all()
+    result = []
+    for book in books:
+        # 查找阅读记录
+        reading_record = ReadingRecord.query.filter_by(book_id=book.id).first()
+        
+        result.append({
+            'id': book.id,
+            'title': book.title,
+            'author': book.author,
+            'coverColor': book.cover_color,
+            'totalPages': book.total_pages,
+            'description': book.description,
+            'isCompleted': reading_record.is_completed if reading_record else False,
+            'currentPage': reading_record.current_page if reading_record else 0,
+            'startedAt': reading_record.started_at.isoformat() if reading_record and reading_record.started_at else None,
+            'completedAt': reading_record.completed_at.isoformat() if reading_record and reading_record.completed_at else None,
+            'notes': reading_record.notes if reading_record else '',
+            'hasRecord': reading_record is not None
+        })
+    return jsonify(result)
+
+@app.route('/api/books', methods=['POST'])
+def add_book():
+    """添加新书籍"""
+    data = request.get_json()
+    
+    if not data or not data.get('title'):
+        return jsonify({'error': '书名不能为空'}), 400
+    
+    book = Book(
+        title=data['title'],
+        author=data.get('author', ''),
+        cover_color=data.get('coverColor', 'blue'),
+        total_pages=data.get('totalPages', 0),
+        description=data.get('description', '')
+    )
+    db.session.add(book)
+    db.session.commit()
+    
+    return jsonify({
+        'id': book.id,
+        'title': book.title,
+        'author': book.author,
+        'coverColor': book.cover_color,
+        'totalPages': book.total_pages,
+        'description': book.description,
+        'isCompleted': False,
+        'currentPage': 0,
+        'hasRecord': False
+    }), 201
+
+@app.route('/api/books/<int:book_id>', methods=['PUT'])
+def update_book(book_id):
+    """更新书籍信息"""
+    book = Book.query.get_or_404(book_id)
+    data = request.get_json()
+    
+    if data.get('title'):
+        book.title = data['title']
+    if data.get('author') is not None:
+        book.author = data['author']
+    if data.get('coverColor'):
+        book.cover_color = data['coverColor']
+    if data.get('totalPages') is not None:
+        book.total_pages = data['totalPages']
+    if data.get('description') is not None:
+        book.description = data['description']
+    
+    db.session.commit()
+    
+    reading_record = ReadingRecord.query.filter_by(book_id=book.id).first()
+    
+    return jsonify({
+        'id': book.id,
+        'title': book.title,
+        'author': book.author,
+        'coverColor': book.cover_color,
+        'totalPages': book.total_pages,
+        'description': book.description,
+        'isCompleted': reading_record.is_completed if reading_record else False,
+        'currentPage': reading_record.current_page if reading_record else 0,
+        'hasRecord': reading_record is not None
+    })
+
+@app.route('/api/books/<int:book_id>', methods=['DELETE'])
+def delete_book(book_id):
+    """删除书籍"""
+    book = Book.query.get_or_404(book_id)
+    db.session.delete(book)
+    db.session.commit()
+    return jsonify({'message': '删除成功'}), 200
+
+# ====================
+# 阅读记录 API
+# ====================
+
+@app.route('/api/reading/<int:book_id>/start', methods=['POST'])
+def start_reading(book_id):
+    """开始阅读书籍"""
+    book = Book.query.get_or_404(book_id)
+    
+    # 检查是否已有阅读记录
+    record = ReadingRecord.query.filter_by(book_id=book.id).first()
+    
+    if not record:
+        record = ReadingRecord(book_id=book.id)
+        db.session.add(record)
+        db.session.commit()
+    
+    return jsonify({
+        'message': '开始阅读',
+        'bookId': book.id,
+        'startedAt': record.started_at.isoformat()
+    }), 200
+
+@app.route('/api/reading/<int:book_id>/complete', methods=['POST'])
+def complete_reading(book_id):
+    """标记书籍为已读完"""
+    book = Book.query.get_or_404(book_id)
+    
+    record = ReadingRecord.query.filter_by(book_id=book.id).first()
+    
+    if not record:
+        record = ReadingRecord(book_id=book.id)
+        db.session.add(record)
+    
+    record.is_completed = True
+    record.completed_at = datetime.utcnow()
+    record.current_page = book.total_pages
+    
+    db.session.commit()
+    
+    return jsonify({
+        'message': '恭喜读完！',
+        'bookId': book.id,
+        'completedAt': record.completed_at.isoformat()
+    }), 200
+
+@app.route('/api/reading/<int:book_id>/progress', methods=['POST'])
+def update_reading_progress(book_id):
+    """更新阅读进度"""
+    book = Book.query.get_or_404(book_id)
+    data = request.get_json()
+    
+    if not data or 'currentPage' not in data:
+        return jsonify({'error': '缺少页数信息'}), 400
+    
+    record = ReadingRecord.query.filter_by(book_id=book.id).first()
+    
+    if not record:
+        record = ReadingRecord(book_id=book.id)
+        db.session.add(record)
+    
+    record.current_page = data['currentPage']
+    
+    # 如果读完了，自动标记为完成
+    if book.total_pages > 0 and record.current_page >= book.total_pages:
+        record.is_completed = True
+        record.completed_at = datetime.utcnow()
+    
+    if data.get('notes'):
+        record.notes = data['notes']
+    
+    db.session.commit()
+    
+    return jsonify({
+        'message': '进度已更新',
+        'currentPage': record.current_page,
+        'isCompleted': record.is_completed
+    }), 200
+
+@app.route('/api/reading/stats', methods=['GET'])
+def get_reading_stats():
+    """获取阅读统计"""
+    total_books = Book.query.count()
+    completed_books = db.session.query(ReadingRecord).filter(
+        ReadingRecord.is_completed == True
+    ).count()
+    reading_books = db.session.query(ReadingRecord).filter(
+        ReadingRecord.is_completed == False
+    ).count()
+    
+    return jsonify({
+        'totalBooks': total_books,
+        'completedBooks': completed_books,
+        'readingBooks': reading_books,
+        'unreadBooks': total_books - completed_books - reading_books
     })
 
 @app.route('/api/init-db', methods=['POST'])

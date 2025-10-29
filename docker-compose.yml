@@ -11,7 +11,7 @@ services:
       MYSQL_CHARACTER_SET_SERVER: utf8mb4
       MYSQL_COLLATION_SERVER: utf8mb4_unicode_ci
     volumes:
-      - mysql_data:/var/lib/mysql
+      - ./data/mysql:/var/lib/mysql
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     ports:
       - "3306:3306"
@@ -57,10 +57,6 @@ services:
       - backend
     networks:
       - literacy-network
-
-volumes:
-  mysql_data:
-    driver: local
 
 networks:
   literacy-network:

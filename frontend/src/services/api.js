@@ -76,3 +76,48 @@ export const weeklyAPI = {
   getCurrentWeek: () => fetchAPI(API_ENDPOINTS.currentWeek),
 };
 
+// 书籍API
+export const bookAPI = {
+  // 获取所有书籍
+  getAll: () => fetchAPI(API_ENDPOINTS.books),
+  
+  // 添加书籍
+  add: (book) => fetchAPI(API_ENDPOINTS.books, {
+    method: 'POST',
+    body: JSON.stringify(book),
+  }),
+  
+  // 更新书籍
+  update: (id, book) => fetchAPI(API_ENDPOINTS.book(id), {
+    method: 'PUT',
+    body: JSON.stringify(book),
+  }),
+  
+  // 删除书籍
+  delete: (id) => fetchAPI(API_ENDPOINTS.book(id), {
+    method: 'DELETE',
+  }),
+};
+
+// 阅读记录API
+export const readingAPI = {
+  // 开始阅读
+  start: (bookId) => fetchAPI(API_ENDPOINTS.startReading(bookId), {
+    method: 'POST',
+  }),
+  
+  // 标记为读完
+  complete: (bookId) => fetchAPI(API_ENDPOINTS.completeReading(bookId), {
+    method: 'POST',
+  }),
+  
+  // 更新阅读进度
+  updateProgress: (bookId, currentPage, notes = '') => fetchAPI(API_ENDPOINTS.updateProgress(bookId), {
+    method: 'POST',
+    body: JSON.stringify({ currentPage, notes }),
+  }),
+  
+  // 获取阅读统计
+  getStats: () => fetchAPI(API_ENDPOINTS.readingStats),
+};
+

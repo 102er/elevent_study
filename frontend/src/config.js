@@ -18,6 +18,16 @@ export const API_ENDPOINTS = {
   weeklyWords: (year, week) => `${API_BASE_URL}/weekly-words/${year}/${week}`,
   currentWeek: `${API_BASE_URL}/current-week`,
   
+  // 书籍管理
+  books: `${API_BASE_URL}/books`,
+  book: (id) => `${API_BASE_URL}/books/${id}`,
+  
+  // 阅读记录
+  startReading: (id) => `${API_BASE_URL}/reading/${id}/start`,
+  completeReading: (id) => `${API_BASE_URL}/reading/${id}/complete`,
+  updateProgress: (id) => `${API_BASE_URL}/reading/${id}/progress`,
+  readingStats: `${API_BASE_URL}/reading/stats`,
+  
   // 健康检查
   health: `${API_BASE_URL}/health`,
 };

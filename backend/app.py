@@ -25,8 +25,8 @@ class Word(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     word = db.Column(db.String(10), nullable=False)
-    pinyin = db.Column(db.String(50), nullable=False)
-    meaning = db.Column(db.String(200), nullable=False)
+    pinyin = db.Column(db.String(50), nullable=True)  # 改为可选
+    meaning = db.Column(db.String(200), nullable=True)  # 改为可选
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # 关联学习记录
@@ -112,8 +112,8 @@ def get_words():
         result.append({
             'id': word.id,
             'word': word.word,
-            'pinyin': word.pinyin,
-            'meaning': word.meaning,
+            'pinyin': word.pinyin or '',  # 处理None值
+            'meaning': word.meaning or '',  # 处理None值
             'learned': learned,
             'lastReviewed': last_record.learned_at.isoformat() if last_record else None
         })
@@ -124,13 +124,14 @@ def add_word():
     """添加新汉字"""
     data = request.get_json()
     
-    if not data or not data.get('word') or not data.get('pinyin') or not data.get('meaning'):
-        return jsonify({'error': '缺少必要字段'}), 400
+    # 只有汉字是必填的
+    if not data or not data.get('word'):
+        return jsonify({'error': '汉字不能为空'}), 400
     
     word = Word(
         word=data['word'],
-        pinyin=data['pinyin'],
-        meaning=data['meaning']
+        pinyin=data.get('pinyin', ''),  # 可选，默认空字符串
+        meaning=data.get('meaning', '')  # 可选，默认空字符串
     )
     db.session.add(word)
     db.session.commit()
@@ -138,8 +139,8 @@ def add_word():
     return jsonify({
         'id': word.id,
         'word': word.word,
-        'pinyin': word.pinyin,
-        'meaning': word.meaning,
+        'pinyin': word.pinyin or '',
+        'meaning': word.meaning or '',
         'learned': False,
         'lastReviewed': None
     }), 201
@@ -152,10 +153,10 @@ def update_word(word_id):
     
     if data.get('word'):
         word.word = data['word']
-    if data.get('pinyin'):
-        word.pinyin = data['pinyin']
-    if data.get('meaning'):
-        word.meaning = data['meaning']
+    if 'pinyin' in data:
+        word.pinyin = data['pinyin'] or ''
+    if 'meaning' in data:
+        word.meaning = data['meaning'] or ''
     
     db.session.commit()
     
@@ -165,8 +166,8 @@ def update_word(word_id):
     return jsonify({
         'id': word.id,
         'word': word.word,
-        'pinyin': word.pinyin,
-        'meaning': word.meaning,
+        'pinyin': word.pinyin or '',
+        'meaning': word.meaning or '',
         'learned': learned,
         'lastReviewed': last_record.learned_at.isoformat() if last_record else None
     })
@@ -244,13 +245,32 @@ def get_weekly_stats():
     result = []
     for stat in stats:
         first_day, last_day = get_week_dates(stat.year, stat.week)
+        
+        # 获取该周学习的具体汉字
+        records = db.session.query(LearningRecord).filter(
+            LearningRecord.year == stat.year,
+            LearningRecord.week == stat.week
+        ).order_by(LearningRecord.learned_at.desc()).all()
+        
+        words = []
+        for record in records:
+            word = record.word
+            words.append({
+                'id': word.id,
+                'word': word.word,
+                'pinyin': word.pinyin or '',
+                'meaning': word.meaning or '',
+                'learnedAt': record.learned_at.isoformat()
+            })
+        
         result.append({
             'year': stat.year,
             'week': stat.week,
             'count': stat.count,
             'startDate': first_day.strftime('%Y-%m-%d'),
             'endDate': last_day.strftime('%Y-%m-%d'),
-            'label': f'{stat.year}年第{stat.week}周'
+            'label': f'{stat.year}年第{stat.week}周',
+            'words': words  # 添加具体汉字列表
         })
     
     return jsonify(result)
@@ -269,8 +289,8 @@ def get_weekly_words(year, week):
         result.append({
             'id': word.id,
             'word': word.word,
-            'pinyin': word.pinyin,
-            'meaning': word.meaning,
+            'pinyin': word.pinyin or '',  # 处理None值
+            'meaning': word.meaning or '',  # 处理None值
             'learnedAt': record.learned_at.isoformat()
         })
     

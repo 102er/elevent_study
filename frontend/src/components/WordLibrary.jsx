@@ -9,7 +9,8 @@ const WordLibrary = ({ words, addWord, deleteWord, editWord }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (formData.word && formData.pinyin && formData.meaning) {
+    // 只需要汉字是必填的
+    if (formData.word) {
       setLoading(true)
       try {
         if (editingId) {
@@ -86,26 +87,28 @@ const WordLibrary = ({ words, addWord, deleteWord, editWord }) => {
               />
             </div>
             <div>
-              <label className="block text-xl font-bold text-gray-700 mb-2">拼音 🔤</label>
+              <label className="block text-xl font-bold text-gray-700 mb-2">
+                拼音 🔤 <span className="text-sm text-gray-400">(选填)</span>
+              </label>
               <input
                 type="text"
                 value={formData.pinyin}
                 onChange={(e) => setFormData({ ...formData, pinyin: e.target.value })}
                 className="w-full text-2xl px-6 py-4 border-4 border-blue-300 rounded-2xl focus:border-blue-500 focus:outline-none transition-all"
-                placeholder="例如：rì"
-                required
+                placeholder="例如：rì（选填）"
                 disabled={loading}
               />
             </div>
             <div>
-              <label className="block text-xl font-bold text-gray-700 mb-2">意思 💡</label>
+              <label className="block text-xl font-bold text-gray-700 mb-2">
+                意思 💡 <span className="text-sm text-gray-400">(选填)</span>
+              </label>
               <input
                 type="text"
                 value={formData.meaning}
                 onChange={(e) => setFormData({ ...formData, meaning: e.target.value })}
                 className="w-full text-2xl px-6 py-4 border-4 border-green-300 rounded-2xl focus:border-green-500 focus:outline-none transition-all"
-                placeholder="例如：太阳"
-                required
+                placeholder="例如：太阳（选填）"
                 disabled={loading}
               />
             </div>

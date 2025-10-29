@@ -178,17 +178,21 @@ const ReadingManagement = () => {
               />
             </div>
             <div>
-              <label className="block text-xl font-bold text-gray-700 mb-2">作者 ✍️</label>
+              <label className="block text-xl font-bold text-gray-700 mb-2">
+                作者 ✍️ <span className="text-sm text-gray-400">(选填)</span>
+              </label>
               <input
                 type="text"
                 value={formData.author}
                 onChange={(e) => setFormData({ ...formData, author: e.target.value })}
                 className="w-full text-xl px-6 py-4 border-4 border-blue-300 rounded-2xl focus:border-blue-500 focus:outline-none transition-all"
-                placeholder="输入作者"
+                placeholder="输入作者（选填）"
               />
             </div>
             <div>
-              <label className="block text-xl font-bold text-gray-700 mb-2">封面颜色 🎨</label>
+              <label className="block text-xl font-bold text-gray-700 mb-2">
+                封面颜色 🎨 <span className="text-sm text-gray-400">(选填)</span>
+              </label>
               <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
                 {colorOptions.map(color => (
                   <button
@@ -205,23 +209,27 @@ const ReadingManagement = () => {
               </div>
             </div>
             <div>
-              <label className="block text-xl font-bold text-gray-700 mb-2">总页数 📄</label>
+              <label className="block text-xl font-bold text-gray-700 mb-2">
+                总页数 📄 <span className="text-sm text-gray-400">(选填)</span>
+              </label>
               <input
                 type="number"
                 value={formData.totalPages}
                 onChange={(e) => setFormData({ ...formData, totalPages: e.target.value })}
                 className="w-full text-xl px-6 py-4 border-4 border-green-300 rounded-2xl focus:border-green-500 focus:outline-none transition-all"
-                placeholder="输入总页数"
+                placeholder="输入总页数（选填）"
                 min="0"
               />
             </div>
             <div>
-              <label className="block text-xl font-bold text-gray-700 mb-2">简介 📝</label>
+              <label className="block text-xl font-bold text-gray-700 mb-2">
+                简介 📝 <span className="text-sm text-gray-400">(选填)</span>
+              </label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 className="w-full text-lg px-6 py-4 border-4 border-yellow-300 rounded-2xl focus:border-yellow-500 focus:outline-none transition-all"
-                placeholder="输入书籍简介"
+                placeholder="输入书籍简介（选填）"
                 rows="3"
               />
             </div>

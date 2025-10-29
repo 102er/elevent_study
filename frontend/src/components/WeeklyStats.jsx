@@ -5,8 +5,6 @@ import { weeklyAPI } from '../services/api'
 const WeeklyStats = () => {
   const [weeklyStats, setWeeklyStats] = useState([])
   const [currentWeek, setCurrentWeek] = useState(null)
-  const [selectedWeek, setSelectedWeek] = useState(null)
-  const [weekWords, setWeekWords] = useState(null)
   const [loading, setLoading] = useState(true)
   const [expandedWeek, setExpandedWeek] = useState(null)
 
@@ -21,6 +19,7 @@ const WeeklyStats = () => {
         weeklyAPI.getStats(),
         weeklyAPI.getCurrentWeek()
       ])
+      // 后端API现在返回包含words的完整数据
       setWeeklyStats(stats)
       setCurrentWeek(current)
     } catch (err) {
@@ -30,24 +29,12 @@ const WeeklyStats = () => {
     }
   }
 
-  const loadWeekWords = async (year, week) => {
-    try {
-      const data = await weeklyAPI.getWords(year, week)
-      setWeekWords(data)
-      setSelectedWeek({ year, week })
-    } catch (err) {
-      console.error('加载周汉字失败:', err)
-    }
-  }
-
   const toggleWeek = (year, week) => {
     const key = `${year}-${week}`
     if (expandedWeek === key) {
       setExpandedWeek(null)
-      setWeekWords(null)
     } else {
       setExpandedWeek(key)
-      loadWeekWords(year, week)
     }
   }
 
@@ -127,19 +114,21 @@ const WeeklyStats = () => {
                   </button>
 
                   {/* 展开的汉字列表 */}
-                  {isExpanded && weekWords && weekWords.year === stat.year && weekWords.week === stat.week && (
+                  {isExpanded && stat.words && stat.words.length > 0 && (
                     <div className="mt-4 bg-gray-50 rounded-2xl p-6 bounce-in">
-                      <h3 className="text-xl font-bold text-gray-800 mb-4">本周学习的汉字：</h3>
+                      <h3 className="text-xl font-bold text-gray-800 mb-4">
+                        📝 本周学习的汉字（{stat.words.length}个）
+                      </h3>
                       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                        {weekWords.words.map((word, wordIndex) => (
+                        {stat.words.map((word, wordIndex) => (
                           <div 
                             key={word.id}
-                            className={`${bgColor} rounded-xl p-4 text-center shadow-md text-white bounce-in`}
+                            className={`${bgColor} rounded-xl p-4 text-center shadow-md text-white bounce-in hover:scale-105 transition-transform`}
                             style={{ animationDelay: `${wordIndex * 0.05}s` }}
                           >
                             <div className="text-5xl font-bold mb-2">{word.word}</div>
-                            <div className="text-lg opacity-90">{word.pinyin}</div>
-                            <div className="text-sm opacity-80 mt-1">{word.meaning}</div>
+                            {word.pinyin && <div className="text-lg opacity-90">{word.pinyin}</div>}
+                            {word.meaning && <div className="text-sm opacity-80 mt-1 line-clamp-2">{word.meaning}</div>}
                           </div>
                         ))}
                       </div>

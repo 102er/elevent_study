@@ -3,6 +3,7 @@ import Header from './components/Header'
 import Dashboard from './components/Dashboard'
 import WordLibrary from './components/WordLibrary'
 import LearningMode from './components/LearningMode'
+import SentencePractice from './components/SentencePractice'
 import RewardSystem from './components/RewardSystem'
 import WeeklyStats from './components/WeeklyStats'
 import ReadingManagement from './components/ReadingManagement'
@@ -143,11 +144,13 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen p-4 md:p-8">
-      <div className="max-w-7xl mx-auto">
-        <Header currentView={currentView} setCurrentView={setCurrentView} />
-        
-        <div className="mt-6">
+    <div className="flex min-h-screen bg-gradient-to-br from-purple-50 to-pink-50">
+      {/* 左侧边栏 */}
+      <Header currentView={currentView} setCurrentView={setCurrentView} />
+      
+      {/* 主内容区 */}
+      <div className="flex-1 overflow-auto">
+        <div className="p-6">
           {currentView === 'dashboard' && (
             <Dashboard 
               words={words} 
@@ -170,6 +173,10 @@ function App() {
               words={words}
               markAsLearned={markAsLearned}
             />
+          )}
+
+          {currentView === 'practice' && (
+            <SentencePractice words={words} />
           )}
           
           {currentView === 'rewards' && (

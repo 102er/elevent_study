@@ -1,98 +1,156 @@
 import React, { useState } from 'react'
-import { BookOpen, Library, GraduationCap, Star, Calendar, Book, Sparkles } from 'lucide-react'
+import { BookOpen, Library, GraduationCap, Star, Calendar, Book, Sparkles, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Menu, PenTool } from 'lucide-react'
 
-const Header = ({ currentView, setCurrentView }) => {
-  // 按模块分组的菜单项
-  const menuSections = {
-    literacy: {
-      title: '📚 儿童识字',
+const Sidebar = ({ currentView, setCurrentView }) => {
+  const [isCollapsed, setIsCollapsed] = useState(false)
+  const [expandedSection, setExpandedSection] = useState('literacy')
+
+  // 菜单配置
+  const menuSections = [
+    {
+      id: 'literacy',
+      title: '儿童识字',
+      icon: BookOpen,
       items: [
-        { id: 'dashboard', label: '学习看板', icon: BookOpen, color: 'bg-kid-blue' },
-        { id: 'library', label: '汉字库', icon: Library, color: 'bg-kid-green' },
-        { id: 'learning', label: '开始学习', icon: GraduationCap, color: 'bg-kid-pink' },
-        { id: 'weekly', label: '周统计', icon: Calendar, color: 'bg-kid-orange' },
-        { id: 'rewards', label: '我的奖励', icon: Star, color: 'bg-kid-yellow' },
+        { id: 'dashboard', label: '学习看板', icon: BookOpen },
+        { id: 'library', label: '汉字库', icon: Library },
+        { id: 'learning', label: '开始学习', icon: GraduationCap },
+        { id: 'practice', label: '汉字练习', icon: PenTool },
+        { id: 'weekly', label: '周统计', icon: Calendar },
+        { id: 'rewards', label: '我的奖励', icon: Star },
       ]
     },
-    reading: {
-      title: '📖 快乐阅读',
+    {
+      id: 'reading',
+      title: '快乐阅读',
+      icon: Book,
       items: [
-        { id: 'reading', label: '阅读记录', icon: Book, color: 'bg-kid-purple' },
+        { id: 'reading', label: '阅读记录', icon: Book },
       ]
     }
+  ]
+
+  const toggleSection = (sectionId) => {
+    setExpandedSection(expandedSection === sectionId ? null : sectionId)
   }
 
   return (
-    <div className="bg-white rounded-3xl shadow-2xl p-4 md:p-6 bounce-in">
-      <h1 className="text-3xl md:text-5xl font-bold text-center mb-6 bg-gradient-to-r from-purple-600 to-pink-600 text-transparent bg-clip-text flex items-center justify-center gap-3">
-        <Sparkles className="text-yellow-400" size={40} />
-        🌈 学习乐园 🌈
-        <Sparkles className="text-yellow-400" size={40} />
-      </h1>
-      
-      <div className="space-y-6">
-        {/* 儿童识字模块 */}
-        <div>
-          <h2 className="text-xl md:text-2xl font-bold text-purple-600 mb-3 text-center">
-            {menuSections.literacy.title}
-          </h2>
-          <nav className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
-            {menuSections.literacy.items.map(item => {
-              const Icon = item.icon
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => setCurrentView(item.id)}
-                  className={`
-                    ${item.color} 
-                    ${currentView === item.id ? 'ring-4 ring-purple-500 scale-105' : 'hover:scale-105'}
-                    text-white rounded-2xl p-4 md:p-6 
-                    transition-all duration-300 
-                    flex flex-col items-center gap-2
-                    shadow-lg hover:shadow-xl
-                    active:scale-95
-                  `}
-                >
-                  <Icon size={32} className="md:w-12 md:h-12" />
-                  <span className="font-bold text-base md:text-xl">{item.label}</span>
-                </button>
-              )
-            })}
-          </nav>
+    <div 
+      className={`
+        bg-gradient-to-b from-purple-600 to-pink-600 
+        transition-all duration-300 ease-in-out
+        ${isCollapsed ? 'w-16' : 'w-64'}
+        min-h-screen flex flex-col shadow-2xl
+      `}
+    >
+      {/* 顶部标题区 */}
+      <div className="p-4 border-b border-white/20">
+        <div className="flex items-center justify-between">
+          {!isCollapsed && (
+            <div className="flex items-center gap-2 text-white animate-fade-in">
+              <Sparkles size={24} className="text-yellow-300" />
+              <h1 className="text-xl font-bold">学习乐园</h1>
+            </div>
+          )}
+          {isCollapsed && (
+            <Menu size={24} className="text-white mx-auto" />
+          )}
         </div>
+      </div>
 
-        {/* 快乐阅读模块 */}
-        <div>
-          <h2 className="text-xl md:text-2xl font-bold text-pink-600 mb-3 text-center">
-            {menuSections.reading.title}
-          </h2>
-          <nav className="grid grid-cols-1 md:grid-cols-1 gap-3 md:gap-4 max-w-md mx-auto">
-            {menuSections.reading.items.map(item => {
-              const Icon = item.icon
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => setCurrentView(item.id)}
-                  className={`
-                    ${item.color} 
-                    ${currentView === item.id ? 'ring-4 ring-pink-500 scale-105' : 'hover:scale-105'}
-                    text-white rounded-2xl p-4 md:p-6 
-                    transition-all duration-300 
-                    flex flex-col items-center gap-2
-                    shadow-lg hover:shadow-xl
-                    active:scale-95
-                  `}
-                >
-                  <Icon size={32} className="md:w-12 md:h-12" />
-                  <span className="font-bold text-base md:text-xl">{item.label}</span>
-                </button>
-              )
-            })}
-          </nav>
-        </div>
+      {/* 菜单区域 */}
+      <div className="flex-1 overflow-y-auto py-4">
+        {menuSections.map((section) => {
+          const SectionIcon = section.icon
+          const isExpanded = expandedSection === section.id
+          
+          return (
+            <div key={section.id} className="mb-2">
+              {/* 一级菜单 */}
+              <button
+                onClick={() => !isCollapsed && toggleSection(section.id)}
+                className={`
+                  w-full px-4 py-3 flex items-center justify-between
+                  text-white hover:bg-white/10 transition-all
+                  ${isCollapsed ? 'justify-center' : ''}
+                `}
+              >
+                <div className="flex items-center gap-3">
+                  <SectionIcon size={20} />
+                  {!isCollapsed && (
+                    <span className="font-semibold">{section.title}</span>
+                  )}
+                </div>
+                {!isCollapsed && (
+                  <div>
+                    {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                  </div>
+                )}
+              </button>
+
+              {/* 二级菜单 */}
+              {!isCollapsed && isExpanded && (
+                <div className="bg-white/5 animate-slide-down">
+                  {section.items.map((item) => {
+                    const ItemIcon = item.icon
+                    const isActive = currentView === item.id
+                    
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => setCurrentView(item.id)}
+                        className={`
+                          w-full px-8 py-2.5 flex items-center gap-3
+                          text-white/90 hover:bg-white/10 transition-all
+                          ${isActive ? 'bg-white/20 font-semibold border-l-4 border-yellow-300' : ''}
+                        `}
+                      >
+                        <ItemIcon size={18} />
+                        <span className="text-sm">{item.label}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+
+              {/* 折叠状态下点击一级菜单的项 */}
+              {isCollapsed && (
+                <div className="absolute left-16 top-0 hidden group-hover:block bg-purple-700 rounded-r-lg shadow-xl z-50">
+                  <div className="p-2 min-w-[150px]">
+                    <div className="font-semibold text-white mb-2 px-2">{section.title}</div>
+                    {section.items.map((item) => {
+                      const ItemIcon = item.icon
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => setCurrentView(item.id)}
+                          className="w-full px-2 py-1.5 flex items-center gap-2 text-white/90 hover:bg-white/10 rounded text-sm"
+                        >
+                          <ItemIcon size={16} />
+                          {item.label}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
+
+      {/* 底部折叠按钮 */}
+      <div className="p-4 border-t border-white/20">
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="w-full py-2 flex items-center justify-center gap-2 text-white hover:bg-white/10 rounded-lg transition-all"
+        >
+          {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+          {!isCollapsed && <span className="text-sm">收起菜单</span>}
+        </button>
       </div>
     </div>
   )
 }
 
-export default Header
+export default Sidebar

@@ -1,19 +1,14 @@
 import React, { useState, useEffect } from 'react'
-import { ChevronLeft, ChevronRight, CheckCircle, XCircle, Sparkles } from 'lucide-react'
+import { ChevronLeft, ChevronRight, CheckCircle, Sparkles } from 'lucide-react'
 
 const LearningMode = ({ words, markAsLearned }) => {
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [showAnswer, setShowAnswer] = useState(false)
   const [celebrationMode, setCelebrationMode] = useState(false)
   const [stars, setStars] = useState([])
   const [loading, setLoading] = useState(false)
 
   // 只显示未学习的汉字
   const unlearnedWords = words.filter(w => !w.learned)
-
-  useEffect(() => {
-    setShowAnswer(false)
-  }, [currentIndex])
 
   const handleNext = () => {
     if (currentIndex < unlearnedWords.length - 1) {
@@ -128,52 +123,28 @@ const LearningMode = ({ words, markAsLearned }) => {
                 {currentWord.word}
               </div>
               
-              {showAnswer && (
-                <div className="space-y-4 bounce-in">
-                  <div className="text-4xl text-purple-600 font-bold">
-                    {currentWord.pinyin}
-                  </div>
-                  <div className="text-3xl text-gray-600">
-                    {currentWord.meaning}
-                  </div>
-                </div>
-              )}
+              <div className="text-2xl text-gray-500 mb-8">
+                认识这个汉字了吗？
+              </div>
             </div>
 
             {/* 操作按钮 */}
-            <div className="flex flex-col gap-4 w-full max-w-md">
-              {!showAnswer ? (
-                <button
-                  onClick={() => setShowAnswer(true)}
-                  disabled={loading}
-                  className="bg-gradient-to-r from-blue-400 to-blue-600 text-white px-8 py-6 rounded-2xl font-bold text-2xl shadow-lg hover:shadow-xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Sparkles size={28} />
-                  显示答案
-                </button>
-              ) : (
-                <div className="flex gap-4">
-                  <button
-                    onClick={() => {
-                      setShowAnswer(false)
-                      handleNext()
-                    }}
-                    disabled={loading}
-                    className="flex-1 bg-gradient-to-r from-gray-400 to-gray-600 text-white px-6 py-6 rounded-2xl font-bold text-xl shadow-lg hover:shadow-xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <XCircle size={24} />
-                    还不会
-                  </button>
-                  <button
-                    onClick={handleMarkAsLearned}
-                    disabled={loading}
-                    className="flex-1 bg-gradient-to-r from-green-400 to-green-600 text-white px-6 py-6 rounded-2xl font-bold text-xl shadow-lg hover:shadow-xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <CheckCircle size={24} />
-                    {loading ? '学习中...' : '学会了！'}
-                  </button>
-                </div>
-              )}
+            <div className="flex gap-4 w-full max-w-md">
+              <button
+                onClick={handleNext}
+                disabled={loading}
+                className="flex-1 bg-gradient-to-r from-gray-400 to-gray-600 text-white px-6 py-6 rounded-2xl font-bold text-xl shadow-lg hover:shadow-xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                跳过
+              </button>
+              <button
+                onClick={handleMarkAsLearned}
+                disabled={loading}
+                className="flex-1 bg-gradient-to-r from-green-400 to-green-600 text-white px-6 py-6 rounded-2xl font-bold text-xl shadow-lg hover:shadow-xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <CheckCircle size={24} />
+                {loading ? '学习中...' : '已学会 ✓'}
+              </button>
             </div>
           </div>
         </div>

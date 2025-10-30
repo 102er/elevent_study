@@ -5,15 +5,15 @@ const RewardSystem = ({ stars }) => {
   const achievements = [
     { 
       title: '初学者', 
-      description: '学会第一个汉字', 
-      threshold: 10, 
+      description: '学会第1个汉字', 
+      threshold: 1, 
       icon: Star,
       color: 'from-blue-400 to-blue-600',
       emoji: '🌟'
     },
     { 
       title: '勤奋宝贝', 
-      description: '学会5个汉字', 
+      description: '学会50个汉字', 
       threshold: 50, 
       icon: Award,
       color: 'from-green-400 to-green-600',
@@ -21,7 +21,7 @@ const RewardSystem = ({ stars }) => {
     },
     { 
       title: '识字小能手', 
-      description: '学会10个汉字', 
+      description: '学会100个汉字', 
       threshold: 100, 
       icon: Trophy,
       color: 'from-yellow-400 to-yellow-600',
@@ -29,37 +29,46 @@ const RewardSystem = ({ stars }) => {
     },
     { 
       title: '汉字大师', 
-      description: '学会20个汉字', 
-      threshold: 200, 
+      description: '学会300个汉字', 
+      threshold: 300, 
       icon: Crown,
       color: 'from-purple-400 to-purple-600',
       emoji: '👑'
     },
     { 
       title: '超级学霸', 
-      description: '学会30个汉字', 
-      threshold: 300, 
+      description: '学会600个汉字', 
+      threshold: 600, 
       icon: Sparkles,
       color: 'from-pink-400 to-pink-600',
       emoji: '✨'
     },
     { 
       title: '识字王者', 
-      description: '学会50个汉字', 
-      threshold: 500, 
+      description: '学会1000个汉字', 
+      threshold: 1000, 
       icon: Zap,
       color: 'from-orange-400 to-orange-600',
       emoji: '⚡'
     },
+    { 
+      title: '终极目标', 
+      description: '学会1500个汉字', 
+      threshold: 1500, 
+      icon: Crown,
+      color: 'from-red-400 to-red-600',
+      emoji: '🎯'
+    },
   ]
 
   const getLevel = () => {
-    if (stars >= 500) return { name: '识字王者', color: 'text-orange-500', emoji: '⚡' }
-    if (stars >= 300) return { name: '超级学霸', color: 'text-pink-500', emoji: '✨' }
-    if (stars >= 200) return { name: '汉字大师', color: 'text-purple-500', emoji: '👑' }
+    if (stars >= 1500) return { name: '终极目标', color: 'text-red-500', emoji: '🎯' }
+    if (stars >= 1000) return { name: '识字王者', color: 'text-orange-500', emoji: '⚡' }
+    if (stars >= 600) return { name: '超级学霸', color: 'text-pink-500', emoji: '✨' }
+    if (stars >= 300) return { name: '汉字大师', color: 'text-purple-500', emoji: '👑' }
     if (stars >= 100) return { name: '识字小能手', color: 'text-yellow-500', emoji: '🏆' }
     if (stars >= 50) return { name: '勤奋宝贝', color: 'text-green-500', emoji: '🏅' }
-    if (stars >= 10) return { name: '初学者', color: 'text-blue-500', emoji: '🌟' }
+    if (stars >= 1) return { name: '初学者', color: 'text-blue-500', emoji: '🌟' }
     return { name: '新手', color: 'text-gray-500', emoji: '🔰' }
   }
 
@@ -80,7 +89,7 @@ const RewardSystem = ({ stars }) => {
       </div>
 
       {/* 下一个成就进度 */}
-      {stars < 500 && (
+      {stars < 1500 && (
         <div className="bg-white rounded-3xl p-8 shadow-lg">
           <h3 className="text-2xl font-bold text-gray-800 mb-4">下一个成就</h3>
           <div className="flex items-center gap-4 mb-4">
@@ -151,7 +160,10 @@ const RewardSystem = ({ stars }) => {
         <div className="text-5xl mb-4">🎈</div>
         <h3 className="text-2xl font-bold text-white mb-2">继续加油！</h3>
         <p className="text-xl text-white opacity-90">
-          每学会一个汉字就能获得 10 颗星星哦！
+          每学会一个汉字就能获得 1 颗星星哦！
+        </p>
+        <p className="text-lg text-white opacity-75 mt-2">
+          目标：收集 1500 颗星星 🎯
         </p>
       </div>
     </div>

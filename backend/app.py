@@ -189,13 +189,13 @@ def mark_as_learned(word_id):
     record = LearningRecord(word_id=word.id)
     db.session.add(record)
     
-    # 增加星星
+    # 增加星星 - 一个汉字一颗星
     star_record = StarRecord.query.first()
     if not star_record:
-        star_record = StarRecord(stars=10)
+        star_record = StarRecord(stars=1)
         db.session.add(star_record)
     else:
-        star_record.stars += 10
+        star_record.stars += 1
     
     db.session.commit()
     

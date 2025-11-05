@@ -318,7 +318,16 @@ const ReadingManagement = () => {
 
                   {/* 操作按钮 */}
                   <div className="flex gap-2 flex-wrap">
-                    {!book.isCompleted && (
+                    {!book.hasRecord && (
+                      <button
+                        onClick={() => handleStartReading(book)}
+                        className="flex-1 bg-blue-500 bg-opacity-80 hover:bg-opacity-100 text-white px-4 py-2 rounded-xl font-bold transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-1 text-sm"
+                      >
+                        <BookOpen size={16} />
+                        开始阅读
+                      </button>
+                    )}
+                    {!book.isCompleted && book.hasRecord && (
                       <button
                         onClick={() => handleCompleteReading(book)}
                         className="flex-1 bg-green-500 bg-opacity-80 hover:bg-opacity-100 text-white px-4 py-2 rounded-xl font-bold transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-1 text-sm"

@@ -37,6 +37,9 @@ const SentencePractice = ({ words }) => {
       return
     }
 
+    // 计算已学汉字的总数
+    const totalLearnedChars = learnedWords.length
+
     // 找出至少包含3个已学汉字的句子
     const available = sentenceTemplates.filter(template => {
       const matchedWords = template.words.filter(w => learnedWords.includes(w))
@@ -93,7 +96,9 @@ const SentencePractice = ({ words }) => {
     setShowHint(false)
   }
 
-  if (words.filter(w => w.learned).length === 0) {
+  const learnedCount = words.filter(w => w.learned).length
+
+  if (learnedCount === 0) {
     return (
       <div className="bg-white rounded-3xl p-12 shadow-lg text-center">
         <div className="text-6xl mb-6">📝</div>
@@ -104,13 +109,36 @@ const SentencePractice = ({ words }) => {
     )
   }
 
+  if (learnedCount < 30) {
+    return (
+      <div className="bg-white rounded-3xl p-12 shadow-lg text-center">
+        <div className="text-6xl mb-6">🔒</div>
+        <h2 className="text-3xl font-bold text-gray-800 mb-4">汉字练习</h2>
+        <p className="text-xl text-gray-600 mb-2">学过的汉字还不够多</p>
+        <p className="text-lg text-gray-500">
+          已学习 <span className="font-bold text-purple-600">{learnedCount}</span> 个汉字，
+          再学 <span className="font-bold text-red-600">{30 - learnedCount}</span> 个就可以开启句子练习啦！🎉
+        </p>
+        <div className="mt-6 w-full max-w-md mx-auto">
+          <div className="h-8 bg-gray-200 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-500"
+              style={{ width: `${(learnedCount / 30) * 100}%` }}
+            ></div>
+          </div>
+          <p className="text-sm text-gray-500 mt-2">{Math.round((learnedCount / 30) * 100)}% 完成</p>
+        </div>
+      </div>
+    )
+  }
+
   if (availableSentences.length === 0) {
     return (
       <div className="bg-white rounded-3xl p-12 shadow-lg text-center">
         <div className="text-6xl mb-6">📚</div>
         <h2 className="text-3xl font-bold text-gray-800 mb-4">汉字练习</h2>
-        <p className="text-xl text-gray-600 mb-2">学过的汉字还不够多</p>
-        <p className="text-lg text-gray-500">继续学习更多汉字来解锁句子练习吧！</p>
+        <p className="text-xl text-gray-600 mb-2">暂时没有合适的句子练习</p>
+        <p className="text-lg text-gray-500">继续学习更多汉字来解锁更多练习吧！</p>
       </div>
     )
   }

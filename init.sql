@@ -84,3 +84,68 @@ INSERT INTO books (title, author, cover_color, total_pages, description) VALUES
 ('安徒生童话', '安徒生', 'blue', 150, '经典童话故事集'),
 ('格林童话', '格林兄弟', 'pink', 140, '温馨的童话故事集');
 
+-- 旅行计划表
+CREATE TABLE IF NOT EXISTS travel_plans (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    destination VARCHAR(200) NOT NULL COMMENT '目的地',
+    budget DECIMAL(10, 2) DEFAULT 0 COMMENT '预算（元）',
+    start_date DATE COMMENT '开始时间',
+    end_date DATE COMMENT '结束时间',
+    notes TEXT COMMENT '备注',
+    is_completed BOOLEAN DEFAULT FALSE COMMENT '是否完成',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    completed_at DATETIME COMMENT '完成时间',
+    INDEX idx_destination (destination),
+    INDEX idx_completed (is_completed),
+    INDEX idx_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='旅行计划表';
+
+-- 旅行足迹表（用于记录旅行花费，1元=1颗星）
+CREATE TABLE IF NOT EXISTS travel_footprints (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    plan_id INT NOT NULL COMMENT '旅行计划ID',
+    expense DECIMAL(10, 2) NOT NULL COMMENT '花费金额',
+    description VARCHAR(200) COMMENT '描述',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '记录时间',
+    FOREIGN KEY (plan_id) REFERENCES travel_plans(id) ON DELETE CASCADE,
+    INDEX idx_plan_id (plan_id),
+    INDEX idx_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='旅行足迹表';
+
+-- 古诗表
+CREATE TABLE IF NOT EXISTS poems (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(100) NOT NULL COMMENT '诗名',
+    author VARCHAR(100) COMMENT '作者',
+    content TEXT NOT NULL COMMENT '诗词内容',
+    is_completed BOOLEAN DEFAULT FALSE COMMENT '是否完成',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '录入时间',
+    completed_at DATETIME COMMENT '完成时间',
+    INDEX idx_title (title),
+    INDEX idx_completed (is_completed),
+    INDEX idx_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='古诗表';
+
+-- 日常任务表
+CREATE TABLE IF NOT EXISTS daily_tasks (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    task_name VARCHAR(200) NOT NULL COMMENT '任务名称',
+    reward_stars INT DEFAULT 0 COMMENT '奖励星星数量',
+    description TEXT COMMENT '任务描述',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    INDEX idx_task_name (task_name),
+    INDEX idx_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='日常任务表';
+
+-- 日常任务完成记录表
+CREATE TABLE IF NOT EXISTS task_completions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    task_id INT NOT NULL COMMENT '任务ID',
+    completed_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '完成时间',
+    notes TEXT COMMENT '备注',
+    stars_earned INT DEFAULT 0 COMMENT '获得星星数',
+    FOREIGN KEY (task_id) REFERENCES daily_tasks(id) ON DELETE CASCADE,
+    INDEX idx_task_id (task_id),
+    INDEX idx_completed_at (completed_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='任务完成记录表';
+

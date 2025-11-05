@@ -7,6 +7,9 @@ import SentencePractice from './components/SentencePractice'
 import RewardSystem from './components/RewardSystem'
 import WeeklyStats from './components/WeeklyStats'
 import ReadingManagement from './components/ReadingManagement'
+import TravelPlans from './components/TravelPlans'
+import PoemsManagement from './components/PoemsManagement'
+import DailyTasks from './components/DailyTasks'
 import { wordAPI, learningAPI, starAPI } from './services/api'
 
 function App() {
@@ -189,6 +192,18 @@ function App() {
 
           {currentView === 'weekly' && (
             <WeeklyStats />
+          )}
+
+          {currentView === 'poems' && (
+            <PoemsManagement />
+          )}
+
+          {currentView === 'travel' && (
+            <TravelPlans />
+          )}
+
+          {currentView === 'tasks' && (
+            <DailyTasks />
           )}
         </div>
       </div>

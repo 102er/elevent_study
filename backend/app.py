@@ -85,6 +85,68 @@ class ReadingRecord(db.Model):
     completed_at = db.Column(db.DateTime)
     notes = db.Column(db.Text)
 
+class TravelPlan(db.Model):
+    """旅行计划表"""
+    __tablename__ = 'travel_plans'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    destination = db.Column(db.String(200), nullable=False)
+    budget = db.Column(db.Numeric(10, 2), default=0)
+    start_date = db.Column(db.Date)
+    end_date = db.Column(db.Date)
+    notes = db.Column(db.Text)
+    is_completed = db.Column(db.Boolean, default=False, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    completed_at = db.Column(db.DateTime)
+    
+    # 关联旅行足迹
+    footprints = db.relationship('TravelFootprint', backref='plan', lazy=True, cascade='all, delete-orphan')
+
+class TravelFootprint(db.Model):
+    """旅行足迹表"""
+    __tablename__ = 'travel_footprints'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    plan_id = db.Column(db.Integer, db.ForeignKey('travel_plans.id'), nullable=False)
+    expense = db.Column(db.Numeric(10, 2), nullable=False)
+    description = db.Column(db.String(200))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class Poem(db.Model):
+    """古诗表"""
+    __tablename__ = 'poems'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    author = db.Column(db.String(100))
+    content = db.Column(db.Text, nullable=False)
+    is_completed = db.Column(db.Boolean, default=False, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    completed_at = db.Column(db.DateTime)
+
+class DailyTask(db.Model):
+    """日常任务表"""
+    __tablename__ = 'daily_tasks'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    task_name = db.Column(db.String(200), nullable=False)
+    reward_stars = db.Column(db.Integer, default=0)
+    description = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # 关联完成记录
+    completions = db.relationship('TaskCompletion', backref='task', lazy=True, cascade='all, delete-orphan')
+
+class TaskCompletion(db.Model):
+    """任务完成记录表"""
+    __tablename__ = 'task_completions'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    task_id = db.Column(db.Integer, db.ForeignKey('daily_tasks.id'), nullable=False)
+    completed_at = db.Column(db.DateTime, default=datetime.utcnow)
+    notes = db.Column(db.Text)
+    stars_earned = db.Column(db.Integer, default=0)
+
 # 辅助函数
 def get_week_dates(year, week):
     """根据年份和周数获取该周的起止日期"""
@@ -524,6 +586,421 @@ def get_reading_stats():
         'readingBooks': reading_books,
         'unreadBooks': total_books - completed_books - reading_books
     })
+
+# ====================
+# 旅行计划 API
+# ====================
+
+@app.route('/api/travel-plans', methods=['GET'])
+def get_travel_plans():
+    """获取所有旅行计划"""
+    plans = TravelPlan.query.order_by(TravelPlan.created_at.desc()).all()
+    result = []
+    for plan in plans:
+        # 计算总花费
+        total_expense = db.session.query(func.sum(TravelFootprint.expense)).filter(
+            TravelFootprint.plan_id == plan.id
+        ).scalar() or 0
+        
+        result.append({
+            'id': plan.id,
+            'destination': plan.destination,
+            'budget': float(plan.budget) if plan.budget else 0,
+            'startDate': plan.start_date.isoformat() if plan.start_date else None,
+            'endDate': plan.end_date.isoformat() if plan.end_date else None,
+            'notes': plan.notes or '',
+            'isCompleted': plan.is_completed,
+            'createdAt': plan.created_at.isoformat(),
+            'completedAt': plan.completed_at.isoformat() if plan.completed_at else None,
+            'totalExpense': float(total_expense),
+            'starsEarned': int(total_expense)  # 1元=1颗星
+        })
+    return jsonify(result)
+
+@app.route('/api/travel-plans', methods=['POST'])
+def add_travel_plan():
+    """添加旅行计划"""
+    data = request.get_json()
+    
+    if not data or not data.get('destination'):
+        return jsonify({'error': '目的地不能为空'}), 400
+    
+    plan = TravelPlan(
+        destination=data['destination'],
+        budget=data.get('budget', 0),
+        start_date=datetime.strptime(data['startDate'], '%Y-%m-%d').date() if data.get('startDate') else None,
+        end_date=datetime.strptime(data['endDate'], '%Y-%m-%d').date() if data.get('endDate') else None,
+        notes=data.get('notes', '')
+    )
+    db.session.add(plan)
+    db.session.commit()
+    
+    return jsonify({
+        'id': plan.id,
+        'destination': plan.destination,
+        'budget': float(plan.budget),
+        'startDate': plan.start_date.isoformat() if plan.start_date else None,
+        'endDate': plan.end_date.isoformat() if plan.end_date else None,
+        'notes': plan.notes or '',
+        'isCompleted': plan.is_completed,
+        'totalExpense': 0,
+        'starsEarned': 0
+    }), 201
+
+@app.route('/api/travel-plans/<int:plan_id>', methods=['PUT'])
+def update_travel_plan(plan_id):
+    """更新旅行计划"""
+    plan = TravelPlan.query.get_or_404(plan_id)
+    data = request.get_json()
+    
+    if data.get('destination'):
+        plan.destination = data['destination']
+    if 'budget' in data:
+        plan.budget = data['budget']
+    if data.get('startDate'):
+        plan.start_date = datetime.strptime(data['startDate'], '%Y-%m-%d').date()
+    if data.get('endDate'):
+        plan.end_date = datetime.strptime(data['endDate'], '%Y-%m-%d').date()
+    if 'notes' in data:
+        plan.notes = data['notes']
+    if 'isCompleted' in data:
+        plan.is_completed = data['isCompleted']
+        if data['isCompleted']:
+            plan.completed_at = datetime.utcnow()
+    
+    db.session.commit()
+    
+    total_expense = db.session.query(func.sum(TravelFootprint.expense)).filter(
+        TravelFootprint.plan_id == plan.id
+    ).scalar() or 0
+    
+    return jsonify({
+        'id': plan.id,
+        'destination': plan.destination,
+        'budget': float(plan.budget),
+        'startDate': plan.start_date.isoformat() if plan.start_date else None,
+        'endDate': plan.end_date.isoformat() if plan.end_date else None,
+        'notes': plan.notes or '',
+        'isCompleted': plan.is_completed,
+        'totalExpense': float(total_expense),
+        'starsEarned': int(total_expense)
+    })
+
+@app.route('/api/travel-plans/<int:plan_id>', methods=['DELETE'])
+def delete_travel_plan(plan_id):
+    """删除旅行计划"""
+    plan = TravelPlan.query.get_or_404(plan_id)
+    db.session.delete(plan)
+    db.session.commit()
+    return jsonify({'message': '删除成功'}), 200
+
+# 旅行足迹 API
+@app.route('/api/travel-plans/<int:plan_id>/footprints', methods=['GET'])
+def get_footprints(plan_id):
+    """获取旅行足迹"""
+    TravelPlan.query.get_or_404(plan_id)  # 验证计划存在
+    footprints = TravelFootprint.query.filter_by(plan_id=plan_id).order_by(TravelFootprint.created_at.desc()).all()
+    
+    result = []
+    for fp in footprints:
+        result.append({
+            'id': fp.id,
+            'expense': float(fp.expense),
+            'description': fp.description or '',
+            'createdAt': fp.created_at.isoformat(),
+            'starsEarned': int(fp.expense)
+        })
+    return jsonify(result)
+
+@app.route('/api/travel-plans/<int:plan_id>/footprints', methods=['POST'])
+def add_footprint(plan_id):
+    """添加旅行足迹（花费记录，自动奖励星星）"""
+    TravelPlan.query.get_or_404(plan_id)  # 验证计划存在
+    data = request.get_json()
+    
+    if not data or 'expense' not in data:
+        return jsonify({'error': '花费金额不能为空'}), 400
+    
+    expense = float(data['expense'])
+    
+    # 创建足迹记录
+    footprint = TravelFootprint(
+        plan_id=plan_id,
+        expense=expense,
+        description=data.get('description', '')
+    )
+    db.session.add(footprint)
+    
+    # 增加星星 - 1元=1颗星
+    stars_to_add = int(expense)
+    star_record = StarRecord.query.first()
+    if not star_record:
+        star_record = StarRecord(stars=stars_to_add)
+        db.session.add(star_record)
+    else:
+        star_record.stars += stars_to_add
+    
+    db.session.commit()
+    
+    return jsonify({
+        'id': footprint.id,
+        'expense': float(footprint.expense),
+        'description': footprint.description or '',
+        'createdAt': footprint.created_at.isoformat(),
+        'starsEarned': stars_to_add,
+        'totalStars': star_record.stars
+    }), 201
+
+@app.route('/api/travel-footprints/<int:footprint_id>', methods=['DELETE'])
+def delete_footprint(footprint_id):
+    """删除旅行足迹"""
+    footprint = TravelFootprint.query.get_or_404(footprint_id)
+    
+    # 减少星星
+    stars_to_remove = int(footprint.expense)
+    star_record = StarRecord.query.first()
+    if star_record:
+        star_record.stars = max(0, star_record.stars - stars_to_remove)
+    
+    db.session.delete(footprint)
+    db.session.commit()
+    return jsonify({'message': '删除成功'}), 200
+
+# ====================
+# 古诗 API
+# ====================
+
+@app.route('/api/poems', methods=['GET'])
+def get_poems():
+    """获取所有古诗"""
+    poems = Poem.query.order_by(Poem.created_at.desc()).all()
+    result = []
+    for poem in poems:
+        result.append({
+            'id': poem.id,
+            'title': poem.title,
+            'author': poem.author or '',
+            'content': poem.content,
+            'isCompleted': poem.is_completed,
+            'createdAt': poem.created_at.isoformat(),
+            'completedAt': poem.completed_at.isoformat() if poem.completed_at else None
+        })
+    return jsonify(result)
+
+@app.route('/api/poems', methods=['POST'])
+def add_poem():
+    """添加古诗"""
+    data = request.get_json()
+    
+    if not data or not data.get('title') or not data.get('content'):
+        return jsonify({'error': '诗名和内容不能为空'}), 400
+    
+    poem = Poem(
+        title=data['title'],
+        author=data.get('author', ''),
+        content=data['content']
+    )
+    db.session.add(poem)
+    db.session.commit()
+    
+    return jsonify({
+        'id': poem.id,
+        'title': poem.title,
+        'author': poem.author or '',
+        'content': poem.content,
+        'isCompleted': poem.is_completed,
+        'createdAt': poem.created_at.isoformat()
+    }), 201
+
+@app.route('/api/poems/<int:poem_id>', methods=['PUT'])
+def update_poem(poem_id):
+    """更新古诗"""
+    poem = Poem.query.get_or_404(poem_id)
+    data = request.get_json()
+    
+    if data.get('title'):
+        poem.title = data['title']
+    if 'author' in data:
+        poem.author = data['author']
+    if data.get('content'):
+        poem.content = data['content']
+    
+    db.session.commit()
+    
+    return jsonify({
+        'id': poem.id,
+        'title': poem.title,
+        'author': poem.author or '',
+        'content': poem.content,
+        'isCompleted': poem.is_completed,
+        'createdAt': poem.created_at.isoformat(),
+        'completedAt': poem.completed_at.isoformat() if poem.completed_at else None
+    })
+
+@app.route('/api/poems/<int:poem_id>', methods=['DELETE'])
+def delete_poem(poem_id):
+    """删除古诗"""
+    poem = Poem.query.get_or_404(poem_id)
+    db.session.delete(poem)
+    db.session.commit()
+    return jsonify({'message': '删除成功'}), 200
+
+@app.route('/api/poems/<int:poem_id>/complete', methods=['POST'])
+def complete_poem(poem_id):
+    """标记古诗为已完成（奖励5颗星）"""
+    poem = Poem.query.get_or_404(poem_id)
+    
+    if poem.is_completed:
+        return jsonify({'error': '该古诗已经完成过了'}), 400
+    
+    poem.is_completed = True
+    poem.completed_at = datetime.utcnow()
+    
+    # 增加星星 - 一首古诗5颗星
+    star_record = StarRecord.query.first()
+    if not star_record:
+        star_record = StarRecord(stars=5)
+        db.session.add(star_record)
+    else:
+        star_record.stars += 5
+    
+    db.session.commit()
+    
+    return jsonify({
+        'message': '完成古诗！获得5颗星',
+        'stars': star_record.stars,
+        'completedAt': poem.completed_at.isoformat()
+    }), 200
+
+# ====================
+# 日常任务 API
+# ====================
+
+@app.route('/api/daily-tasks', methods=['GET'])
+def get_daily_tasks():
+    """获取所有日常任务"""
+    tasks = DailyTask.query.order_by(DailyTask.created_at.desc()).all()
+    result = []
+    for task in tasks:
+        completions_count = TaskCompletion.query.filter_by(task_id=task.id).count()
+        last_completion = TaskCompletion.query.filter_by(task_id=task.id).order_by(TaskCompletion.completed_at.desc()).first()
+        
+        result.append({
+            'id': task.id,
+            'taskName': task.task_name,
+            'rewardStars': task.reward_stars,
+            'description': task.description or '',
+            'createdAt': task.created_at.isoformat(),
+            'completionsCount': completions_count,
+            'lastCompletedAt': last_completion.completed_at.isoformat() if last_completion else None
+        })
+    return jsonify(result)
+
+@app.route('/api/daily-tasks', methods=['POST'])
+def add_daily_task():
+    """添加日常任务"""
+    data = request.get_json()
+    
+    if not data or not data.get('taskName'):
+        return jsonify({'error': '任务名称不能为空'}), 400
+    
+    task = DailyTask(
+        task_name=data['taskName'],
+        reward_stars=data.get('rewardStars', 0),
+        description=data.get('description', '')
+    )
+    db.session.add(task)
+    db.session.commit()
+    
+    return jsonify({
+        'id': task.id,
+        'taskName': task.task_name,
+        'rewardStars': task.reward_stars,
+        'description': task.description or '',
+        'createdAt': task.created_at.isoformat(),
+        'completionsCount': 0
+    }), 201
+
+@app.route('/api/daily-tasks/<int:task_id>', methods=['PUT'])
+def update_daily_task(task_id):
+    """更新日常任务"""
+    task = DailyTask.query.get_or_404(task_id)
+    data = request.get_json()
+    
+    if data.get('taskName'):
+        task.task_name = data['taskName']
+    if 'rewardStars' in data:
+        task.reward_stars = data['rewardStars']
+    if 'description' in data:
+        task.description = data['description']
+    
+    db.session.commit()
+    
+    completions_count = TaskCompletion.query.filter_by(task_id=task.id).count()
+    
+    return jsonify({
+        'id': task.id,
+        'taskName': task.task_name,
+        'rewardStars': task.reward_stars,
+        'description': task.description or '',
+        'createdAt': task.created_at.isoformat(),
+        'completionsCount': completions_count
+    })
+
+@app.route('/api/daily-tasks/<int:task_id>', methods=['DELETE'])
+def delete_daily_task(task_id):
+    """删除日常任务"""
+    task = DailyTask.query.get_or_404(task_id)
+    db.session.delete(task)
+    db.session.commit()
+    return jsonify({'message': '删除成功'}), 200
+
+@app.route('/api/daily-tasks/<int:task_id>/complete', methods=['POST'])
+def complete_daily_task(task_id):
+    """完成日常任务（奖励星星）"""
+    task = DailyTask.query.get_or_404(task_id)
+    data = request.get_json() or {}
+    
+    # 创建完成记录
+    completion = TaskCompletion(
+        task_id=task.id,
+        notes=data.get('notes', ''),
+        stars_earned=task.reward_stars
+    )
+    db.session.add(completion)
+    
+    # 增加星星
+    star_record = StarRecord.query.first()
+    if not star_record:
+        star_record = StarRecord(stars=task.reward_stars)
+        db.session.add(star_record)
+    else:
+        star_record.stars += task.reward_stars
+    
+    db.session.commit()
+    
+    return jsonify({
+        'message': f'完成任务！获得{task.reward_stars}颗星',
+        'stars': star_record.stars,
+        'starsEarned': task.reward_stars,
+        'completedAt': completion.completed_at.isoformat()
+    }), 200
+
+@app.route('/api/daily-tasks/<int:task_id>/completions', methods=['GET'])
+def get_task_completions(task_id):
+    """获取任务完成记录"""
+    DailyTask.query.get_or_404(task_id)  # 验证任务存在
+    completions = TaskCompletion.query.filter_by(task_id=task_id).order_by(TaskCompletion.completed_at.desc()).all()
+    
+    result = []
+    for comp in completions:
+        result.append({
+            'id': comp.id,
+            'completedAt': comp.completed_at.isoformat(),
+            'notes': comp.notes or '',
+            'starsEarned': comp.stars_earned
+        })
+    return jsonify(result)
 
 @app.route('/api/init-db', methods=['POST'])
 def init_database():

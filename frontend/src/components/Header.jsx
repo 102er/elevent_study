@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { BookOpen, Library, GraduationCap, Star, Calendar, Book, Sparkles, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Menu, PenTool } from 'lucide-react'
+import { BookOpen, Library, GraduationCap, Star, Calendar, Book, Sparkles, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Menu, PenTool, Plane, FileText, CheckSquare } from 'lucide-react'
 
 const Sidebar = ({ currentView, setCurrentView }) => {
   const [isCollapsed, setIsCollapsed] = useState(false)
@@ -26,6 +26,23 @@ const Sidebar = ({ currentView, setCurrentView }) => {
       icon: Book,
       items: [
         { id: 'reading', label: '阅读记录', icon: Book },
+      ]
+    },
+    {
+      id: 'poems',
+      title: '古诗词',
+      icon: FileText,
+      items: [
+        { id: 'poems', label: '古诗背诵', icon: FileText },
+      ]
+    },
+    {
+      id: 'life',
+      title: '生活记录',
+      icon: Sparkles,
+      items: [
+        { id: 'travel', label: '旅行计划', icon: Plane },
+        { id: 'tasks', label: '日常任务', icon: CheckSquare },
       ]
     }
   ]

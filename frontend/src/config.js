@@ -28,6 +28,23 @@ export const API_ENDPOINTS = {
   updateProgress: (id) => `${API_BASE_URL}/reading/${id}/progress`,
   readingStats: `${API_BASE_URL}/reading/stats`,
   
+  // 旅行计划
+  travelPlans: `${API_BASE_URL}/travel-plans`,
+  travelPlan: (id) => `${API_BASE_URL}/travel-plans/${id}`,
+  travelFootprints: (planId) => `${API_BASE_URL}/travel-plans/${planId}/footprints`,
+  travelFootprint: (id) => `${API_BASE_URL}/travel-footprints/${id}`,
+  
+  // 古诗管理
+  poems: `${API_BASE_URL}/poems`,
+  poem: (id) => `${API_BASE_URL}/poems/${id}`,
+  completePoem: (id) => `${API_BASE_URL}/poems/${id}/complete`,
+  
+  // 日常任务
+  dailyTasks: `${API_BASE_URL}/daily-tasks`,
+  dailyTask: (id) => `${API_BASE_URL}/daily-tasks/${id}`,
+  completeTask: (id) => `${API_BASE_URL}/daily-tasks/${id}/complete`,
+  taskCompletions: (taskId) => `${API_BASE_URL}/daily-tasks/${taskId}/completions`,
+  
   // 健康检查
   health: `${API_BASE_URL}/health`,
 };

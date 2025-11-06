@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { BookOpen, Library, GraduationCap, Star, Calendar, Book, Sparkles, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Menu, PenTool, Plane, FileText, CheckSquare } from 'lucide-react'
+import { BookOpen, Library, GraduationCap, Star, Calendar, Book, Sparkles, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Menu, PenTool, Plane, FileText, CheckSquare, Gift, Award, MapPin } from 'lucide-react'
 
 const Sidebar = ({ currentView, setCurrentView }) => {
   const [isCollapsed, setIsCollapsed] = useState(false)
@@ -17,7 +17,6 @@ const Sidebar = ({ currentView, setCurrentView }) => {
         { id: 'learning', label: '开始学习', icon: GraduationCap },
         { id: 'practice', label: '汉字练习', icon: PenTool },
         { id: 'weekly', label: '周统计', icon: Calendar },
-        { id: 'rewards', label: '我的奖励', icon: Star },
       ]
     },
     {
@@ -42,7 +41,17 @@ const Sidebar = ({ currentView, setCurrentView }) => {
       icon: Sparkles,
       items: [
         { id: 'travel', label: '旅行计划', icon: Plane },
+        { id: 'travel-map', label: '旅行足迹', icon: MapPin },
         { id: 'tasks', label: '日常任务', icon: CheckSquare },
+      ]
+    },
+    {
+      id: 'rewards',
+      title: '我的奖励',
+      icon: Award,
+      items: [
+        { id: 'my-rewards', label: '成就徽章', icon: Star },
+        { id: 'star-exchange', label: '星星兑换', icon: Gift },
       ]
     }
   ]

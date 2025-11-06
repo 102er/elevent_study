@@ -147,6 +147,32 @@ class TaskCompletion(db.Model):
     notes = db.Column(db.Text)
     stars_earned = db.Column(db.Integer, default=0)
 
+class RewardItem(db.Model):
+    """奖励商品表"""
+    __tablename__ = 'reward_items'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text)
+    cost_stars = db.Column(db.Integer, nullable=False)
+    icon = db.Column(db.String(50), default='🎁')
+    is_active = db.Column(db.Boolean, default=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # 关联兑换记录
+    redemptions = db.relationship('StarRedemption', backref='item', lazy=True, cascade='all, delete-orphan')
+
+class StarRedemption(db.Model):
+    """星星兑换记录表"""
+    __tablename__ = 'star_redemptions'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    item_id = db.Column(db.Integer, db.ForeignKey('reward_items.id'), nullable=False)
+    stars_spent = db.Column(db.Integer, nullable=False)
+    redeemed_at = db.Column(db.DateTime, default=datetime.utcnow)
+    notes = db.Column(db.Text)
+    status = db.Column(db.String(20), default='pending')  # pending, completed, cancelled
+
 # 辅助函数
 def get_week_dates(year, week):
     """根据年份和周数获取该周的起止日期"""
@@ -1002,6 +1028,189 @@ def get_task_completions(task_id):
         })
     return jsonify(result)
 
+# ====================
+# 奖励商品 API
+# ====================
+
+@app.route('/api/reward-items', methods=['GET'])
+def get_reward_items():
+    """获取所有奖励商品"""
+    items = RewardItem.query.filter_by(is_active=True).order_by(RewardItem.cost_stars).all()
+    result = []
+    for item in items:
+        redemption_count = StarRedemption.query.filter_by(item_id=item.id, status='completed').count()
+        result.append({
+            'id': item.id,
+            'name': item.name,
+            'description': item.description or '',
+            'costStars': item.cost_stars,
+            'icon': item.icon,
+            'redemptionCount': redemption_count,
+            'createdAt': item.created_at.isoformat()
+        })
+    return jsonify(result)
+
+@app.route('/api/reward-items', methods=['POST'])
+def add_reward_item():
+    """添加奖励商品"""
+    data = request.get_json()
+    
+    if not data or not data.get('name') or not data.get('costStars'):
+        return jsonify({'error': '商品名称和所需星星不能为空'}), 400
+    
+    item = RewardItem(
+        name=data['name'],
+        description=data.get('description', ''),
+        cost_stars=data['costStars'],
+        icon=data.get('icon', '🎁')
+    )
+    db.session.add(item)
+    db.session.commit()
+    
+    return jsonify({
+        'id': item.id,
+        'name': item.name,
+        'description': item.description or '',
+        'costStars': item.cost_stars,
+        'icon': item.icon,
+        'redemptionCount': 0
+    }), 201
+
+@app.route('/api/reward-items/<int:item_id>', methods=['PUT'])
+def update_reward_item(item_id):
+    """更新奖励商品"""
+    item = RewardItem.query.get_or_404(item_id)
+    data = request.get_json()
+    
+    if data.get('name'):
+        item.name = data['name']
+    if 'description' in data:
+        item.description = data['description']
+    if 'costStars' in data:
+        item.cost_stars = data['costStars']
+    if 'icon' in data:
+        item.icon = data['icon']
+    if 'isActive' in data:
+        item.is_active = data['isActive']
+    
+    db.session.commit()
+    
+    redemption_count = StarRedemption.query.filter_by(item_id=item.id, status='completed').count()
+    
+    return jsonify({
+        'id': item.id,
+        'name': item.name,
+        'description': item.description or '',
+        'costStars': item.cost_stars,
+        'icon': item.icon,
+        'redemptionCount': redemption_count
+    })
+
+@app.route('/api/reward-items/<int:item_id>', methods=['DELETE'])
+def delete_reward_item(item_id):
+    """删除奖励商品"""
+    item = RewardItem.query.get_or_404(item_id)
+    db.session.delete(item)
+    db.session.commit()
+    return jsonify({'message': '删除成功'}), 200
+
+# ====================
+# 星星兑换 API
+# ====================
+
+@app.route('/api/star-redemptions', methods=['GET'])
+def get_star_redemptions():
+    """获取所有兑换记录"""
+    redemptions = StarRedemption.query.order_by(StarRedemption.redeemed_at.desc()).all()
+    result = []
+    for redemption in redemptions:
+        result.append({
+            'id': redemption.id,
+            'itemName': redemption.item.name,
+            'itemIcon': redemption.item.icon,
+            'starsSpent': redemption.stars_spent,
+            'redeemedAt': redemption.redeemed_at.isoformat(),
+            'notes': redemption.notes or '',
+            'status': redemption.status
+        })
+    return jsonify(result)
+
+@app.route('/api/star-redemptions', methods=['POST'])
+def redeem_stars():
+    """兑换星星"""
+    data = request.get_json()
+    
+    if not data or not data.get('itemId'):
+        return jsonify({'error': '商品ID不能为空'}), 400
+    
+    item = RewardItem.query.get_or_404(data['itemId'])
+    
+    # 检查星星是否足够
+    star_record = StarRecord.query.first()
+    if not star_record or star_record.stars < item.cost_stars:
+        return jsonify({'error': '星星不足，无法兑换'}), 400
+    
+    # 扣除星星
+    star_record.stars -= item.cost_stars
+    
+    # 创建兑换记录
+    redemption = StarRedemption(
+        item_id=item.id,
+        stars_spent=item.cost_stars,
+        notes=data.get('notes', ''),
+        status='completed'
+    )
+    db.session.add(redemption)
+    db.session.commit()
+    
+    return jsonify({
+        'message': f'成功兑换{item.name}！',
+        'remainingStars': star_record.stars,
+        'starsSpent': item.cost_stars,
+        'itemName': item.name
+    }), 200
+
+@app.route('/api/star-redemptions/<int:redemption_id>/cancel', methods=['POST'])
+def cancel_redemption(redemption_id):
+    """取消兑换（退回星星）"""
+    redemption = StarRedemption.query.get_or_404(redemption_id)
+    
+    if redemption.status != 'completed':
+        return jsonify({'error': '该兑换无法取消'}), 400
+    
+    # 退回星星
+    star_record = StarRecord.query.first()
+    if star_record:
+        star_record.stars += redemption.stars_spent
+    
+    # 更新兑换状态
+    redemption.status = 'cancelled'
+    db.session.commit()
+    
+    return jsonify({
+        'message': '兑换已取消，星星已退回',
+        'remainingStars': star_record.stars if star_record else 0,
+        'starsReturned': redemption.stars_spent
+    }), 200
+
+@app.route('/api/star-redemptions/stats', methods=['GET'])
+def get_redemption_stats():
+    """获取兑换统计"""
+    total_redemptions = StarRedemption.query.filter_by(status='completed').count()
+    total_stars_spent = db.session.query(func.sum(StarRedemption.stars_spent)).filter(
+        StarRedemption.status == 'completed'
+    ).scalar() or 0
+    
+    star_record = StarRecord.query.first()
+    current_stars = star_record.stars if star_record else 0
+    
+    return jsonify({
+        'totalRedemptions': total_redemptions,
+        'totalStarsSpent': int(total_stars_spent),
+        'currentStars': current_stars,
+        'totalStarsEarned': current_stars + int(total_stars_spent)
+    })
+
 @app.route('/api/init-db', methods=['POST'])
 def init_database():
     """初始化数据库（仅用于开发）"""
@@ -1023,6 +1232,21 @@ def init_database():
             for w in default_words:
                 word = Word(**w)
                 db.session.add(word)
+            db.session.commit()
+        
+        # 添加默认奖励商品
+        if RewardItem.query.count() == 0:
+            default_items = [
+                {'name': '去游乐园', 'description': '全家一起去游乐园玩一天', 'cost_stars': 100, 'icon': '🎢'},
+                {'name': '买玩具', 'description': '选一个喜欢的玩具', 'cost_stars': 50, 'icon': '🧸'},
+                {'name': '吃大餐', 'description': '去最喜欢的餐厅吃一顿', 'cost_stars': 80, 'icon': '🍕'},
+                {'name': '看电影', 'description': '去电影院看一场电影', 'cost_stars': 60, 'icon': '🎬'},
+                {'name': '买零食', 'description': '买一些喜欢的零食', 'cost_stars': 30, 'icon': '🍬'},
+                {'name': '周末旅行', 'description': '周末去附近玩两天', 'cost_stars': 150, 'icon': '✈️'},
+            ]
+            for item_data in default_items:
+                item = RewardItem(**item_data)
+                db.session.add(item)
             db.session.commit()
         
         return jsonify({'message': '数据库初始化成功'}), 200

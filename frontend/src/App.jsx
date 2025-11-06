@@ -8,8 +8,11 @@ import RewardSystem from './components/RewardSystem'
 import WeeklyStats from './components/WeeklyStats'
 import ReadingManagement from './components/ReadingManagement'
 import TravelPlans from './components/TravelPlans'
+import TravelFootprintMap from './components/TravelFootprintMap'
 import PoemsManagement from './components/PoemsManagement'
 import DailyTasks from './components/DailyTasks'
+import MyRewards from './components/MyRewards'
+import StarExchange from './components/StarExchange'
 import { wordAPI, learningAPI, starAPI } from './services/api'
 
 function App() {
@@ -202,8 +205,20 @@ function App() {
             <TravelPlans />
           )}
 
+          {currentView === 'travel-map' && (
+            <TravelFootprintMap />
+          )}
+
           {currentView === 'tasks' && (
             <DailyTasks />
+          )}
+
+          {currentView === 'my-rewards' && (
+            <MyRewards stars={stars} onRefresh={loadData} />
+          )}
+
+          {currentView === 'star-exchange' && (
+            <StarExchange stars={stars} onRefresh={loadData} />
           )}
         </div>
       </div>

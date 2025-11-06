@@ -149,3 +149,40 @@ CREATE TABLE IF NOT EXISTS task_completions (
     INDEX idx_completed_at (completed_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='任务完成记录表';
 
+-- 奖励商品表
+CREATE TABLE IF NOT EXISTS reward_items (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(200) NOT NULL COMMENT '商品名称',
+    description TEXT COMMENT '商品描述',
+    cost_stars INT NOT NULL COMMENT '所需星星数',
+    icon VARCHAR(50) DEFAULT '🎁' COMMENT '图标',
+    is_active BOOLEAN DEFAULT TRUE COMMENT '是否启用',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    INDEX idx_name (name),
+    INDEX idx_cost_stars (cost_stars),
+    INDEX idx_is_active (is_active)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='奖励商品表';
+
+-- 星星兑换记录表
+CREATE TABLE IF NOT EXISTS star_redemptions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    item_id INT NOT NULL COMMENT '商品ID',
+    stars_spent INT NOT NULL COMMENT '花费星星数',
+    redeemed_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '兑换时间',
+    notes TEXT COMMENT '备注',
+    status VARCHAR(20) DEFAULT 'pending' COMMENT '状态：pending/completed/cancelled',
+    FOREIGN KEY (item_id) REFERENCES reward_items(id) ON DELETE CASCADE,
+    INDEX idx_item_id (item_id),
+    INDEX idx_status (status),
+    INDEX idx_redeemed_at (redeemed_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='星星兑换记录表';
+
+-- 插入默认奖励商品
+INSERT INTO reward_items (name, description, cost_stars, icon) VALUES
+('去游乐园', '全家一起去游乐园玩一天', 100, '🎢'),
+('买玩具', '选一个喜欢的玩具', 50, '🧸'),
+('吃大餐', '去最喜欢的餐厅吃一顿', 80, '🍕'),
+('看电影', '去电影院看一场电影', 60, '🎬'),
+('买零食', '买一些喜欢的零食', 30, '🍬'),
+('周末旅行', '周末去附近玩两天', 150, '✈️');
+

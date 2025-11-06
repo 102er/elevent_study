@@ -56,7 +56,7 @@ backup_database() {
     
     print_info "正在备份数据库到: $BACKUP_FILE"
     
-    docker compose exec -T mysql mysqldump -uroot -ppassword literacy_db > "$BACKUP_FILE" 2>/dev/null
+    docker compose exec -T mysql mysqldump -uroot -pliteracy2024 literacy_db > "$BACKUP_FILE" 2>/dev/null
     
     if [ $? -eq 0 ]; then
         BACKUP_SIZE=$(ls -lh "$BACKUP_FILE" | awk '{print $5}')
@@ -78,7 +78,7 @@ upgrade_database() {
     
     print_info "正在执行升级脚本..."
     
-    docker compose exec -T mysql mysql -uroot -ppassword literacy_db < upgrade_v1.1.0.sql
+    docker compose exec -T mysql mysql -uroot -pliteracy2024 literacy_db < upgrade_v1.1.0.sql
     
     if [ $? -eq 0 ]; then
         print_success "数据库升级成功！"
@@ -122,7 +122,7 @@ verify_upgrade() {
     
     # 显示表信息
     print_info "查询新增的表..."
-    docker compose exec -T mysql mysql -uroot -ppassword literacy_db -e "
+    docker compose exec -T mysql mysql -uroot -pliteracy2024 literacy_db -e "
         SELECT TABLE_NAME, TABLE_ROWS 
         FROM information_schema.TABLES 
         WHERE TABLE_SCHEMA = 'literacy_db' 
@@ -159,7 +159,7 @@ handle_error() {
     print_warning "请查看错误信息，并检查："
     echo "  1. Docker 容器是否正常运行: docker compose ps"
     echo "  2. 查看日志: docker compose logs"
-    echo "  3. 如需恢复，使用备份: docker compose exec -T mysql mysql -uroot -ppassword literacy_db < $BACKUP_FILE"
+    echo "  3. 如需恢复，使用备份: docker compose exec -T mysql mysql -uroot -pliteracy2024 literacy_db < $BACKUP_FILE"
     exit 1
 }
 

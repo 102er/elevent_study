@@ -45,6 +45,16 @@ export const API_ENDPOINTS = {
   completeTask: (id) => `${API_BASE_URL}/daily-tasks/${id}/complete`,
   taskCompletions: (taskId) => `${API_BASE_URL}/daily-tasks/${taskId}/completions`,
   
+  // 奖励商品
+  rewardItems: `${API_BASE_URL}/reward-items`,
+  rewardItem: (id) => `${API_BASE_URL}/reward-items/${id}`,
+  
+  // 星星兑换
+  starRedemptions: `${API_BASE_URL}/star-redemptions`,
+  redeemStar: `${API_BASE_URL}/star-redemptions`,
+  cancelRedemption: (id) => `${API_BASE_URL}/star-redemptions/${id}/cancel`,
+  redemptionStats: `${API_BASE_URL}/star-redemptions/stats`,
+  
   // 健康检查
   health: `${API_BASE_URL}/health`,
 };

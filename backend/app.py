@@ -638,8 +638,7 @@ def get_travel_plans():
             'isCompleted': plan.is_completed,
             'createdAt': plan.created_at.isoformat(),
             'completedAt': plan.completed_at.isoformat() if plan.completed_at else None,
-            'totalExpense': float(total_expense),
-            'starsEarned': int(total_expense)  # 1元=1颗星
+            'totalExpense': float(total_expense)
         })
     return jsonify(result)
 
@@ -669,8 +668,7 @@ def add_travel_plan():
         'endDate': plan.end_date.isoformat() if plan.end_date else None,
         'notes': plan.notes or '',
         'isCompleted': plan.is_completed,
-        'totalExpense': 0,
-        'starsEarned': 0
+        'totalExpense': 0
     }), 201
 
 @app.route('/api/travel-plans/<int:plan_id>', methods=['PUT'])
@@ -708,8 +706,7 @@ def update_travel_plan(plan_id):
         'endDate': plan.end_date.isoformat() if plan.end_date else None,
         'notes': plan.notes or '',
         'isCompleted': plan.is_completed,
-        'totalExpense': float(total_expense),
-        'starsEarned': int(total_expense)
+        'totalExpense': float(total_expense)
     })
 
 @app.route('/api/travel-plans/<int:plan_id>', methods=['DELETE'])
@@ -733,14 +730,13 @@ def get_footprints(plan_id):
             'id': fp.id,
             'expense': float(fp.expense),
             'description': fp.description or '',
-            'createdAt': fp.created_at.isoformat(),
-            'starsEarned': int(fp.expense)
+            'createdAt': fp.created_at.isoformat()
         })
     return jsonify(result)
 
 @app.route('/api/travel-plans/<int:plan_id>/footprints', methods=['POST'])
 def add_footprint(plan_id):
-    """添加旅行足迹（花费记录，自动奖励星星）"""
+    """添加旅行足迹（花费记录）"""
     TravelPlan.query.get_or_404(plan_id)  # 验证计划存在
     data = request.get_json()
     
@@ -756,38 +752,19 @@ def add_footprint(plan_id):
         description=data.get('description', '')
     )
     db.session.add(footprint)
-    
-    # 增加星星 - 1元=1颗星
-    stars_to_add = int(expense)
-    star_record = StarRecord.query.first()
-    if not star_record:
-        star_record = StarRecord(stars=stars_to_add)
-        db.session.add(star_record)
-    else:
-        star_record.stars += stars_to_add
-    
     db.session.commit()
     
     return jsonify({
         'id': footprint.id,
         'expense': float(footprint.expense),
         'description': footprint.description or '',
-        'createdAt': footprint.created_at.isoformat(),
-        'starsEarned': stars_to_add,
-        'totalStars': star_record.stars
+        'createdAt': footprint.created_at.isoformat()
     }), 201
 
 @app.route('/api/travel-footprints/<int:footprint_id>', methods=['DELETE'])
 def delete_footprint(footprint_id):
     """删除旅行足迹"""
     footprint = TravelFootprint.query.get_or_404(footprint_id)
-    
-    # 减少星星
-    stars_to_remove = int(footprint.expense)
-    star_record = StarRecord.query.first()
-    if star_record:
-        star_record.stars = max(0, star_record.stars - stars_to_remove)
-    
     db.session.delete(footprint)
     db.session.commit()
     return jsonify({'message': '删除成功'}), 200

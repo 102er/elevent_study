@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { MapPin, Users, Calendar, Star, Award } from 'lucide-react'
+import { MapPin, Users, Calendar, Award } from 'lucide-react'
 
 const TravelFootprintMap = () => {
   const [plans, setPlans] = useState([])
@@ -26,7 +26,6 @@ const TravelFootprintMap = () => {
   // 计算总统计
   const totalDestinations = plans.length
   const totalExpense = plans.reduce((sum, p) => sum + p.totalExpense, 0)
-  const totalStars = plans.reduce((sum, p) => sum + p.starsEarned, 0)
 
   if (loading) {
     return (
@@ -87,17 +86,10 @@ const TravelFootprintMap = () => {
           </div>
 
           {/* 统计信息 */}
-          <div className="grid grid-cols-2 gap-4 mt-6">
+          <div className="mt-6">
             <div className="bg-white bg-opacity-20 rounded-xl p-4 text-center">
               <div className="text-3xl font-bold">¥{totalExpense.toFixed(0)}</div>
               <div className="text-sm opacity-90">总旅行花费</div>
-            </div>
-            <div className="bg-white bg-opacity-20 rounded-xl p-4 text-center">
-              <div className="flex items-center justify-center gap-2">
-                <Star size={24} className="text-yellow-300" />
-                <span className="text-3xl font-bold">{totalStars}</span>
-              </div>
-              <div className="text-sm opacity-90">获得星星</div>
             </div>
           </div>
         </div>
@@ -169,7 +161,7 @@ const TravelFootprintMap = () => {
                     </div>
 
                     {/* 统计信息 */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                    <div className="grid grid-cols-3 gap-4 mt-4">
                       <div className="bg-white rounded-xl p-3 text-center">
                         <div className="text-sm text-gray-500 mb-1">预算</div>
                         <div className="text-lg font-bold text-blue-600">¥{plan.budget}</div>
@@ -184,13 +176,6 @@ const TravelFootprintMap = () => {
                           plan.budget - plan.totalExpense >= 0 ? 'text-green-600' : 'text-red-600'
                         }`}>
                           ¥{(plan.budget - plan.totalExpense).toFixed(0)}
-                        </div>
-                      </div>
-                      <div className="bg-white rounded-xl p-3 text-center">
-                        <div className="text-sm text-gray-500 mb-1">获得星星</div>
-                        <div className="flex items-center justify-center gap-1">
-                          <Star size={18} className="text-yellow-500" />
-                          <span className="text-lg font-bold text-yellow-600">{plan.starsEarned}</span>
                         </div>
                       </div>
                     </div>

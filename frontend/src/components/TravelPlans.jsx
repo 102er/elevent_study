@@ -334,14 +334,7 @@ const TravelPlans = () => {
                   <span className="text-sm font-bold text-gray-700">旅行花费</span>
                   <div className="flex items-center gap-1 text-orange-600 font-bold">
                     <DollarSign size={18} />
-                    <span>¥{plan.totalExpense}</span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between mt-1">
-                  <span className="text-xs text-gray-500">获得星星</span>
-                  <div className="flex items-center gap-1 text-yellow-600 font-bold">
-                    <Star size={16} />
-                    <span>{plan.starsEarned}</span>
+                    <span>¥{plan.totalExpense || 0}</span>
                   </div>
                 </div>
               </div>
@@ -460,7 +453,6 @@ const TravelPlans = () => {
                     min="0"
                     step="0.01"
                   />
-                  <p className="text-sm text-gray-500 mt-1">💡 1元 = 1颗星星</p>
                 </div>
                 <div>
                   <label className="block text-lg font-bold text-gray-700 mb-2">描述 📝</label>
@@ -497,22 +489,16 @@ const TravelPlans = () => {
               {footprints[selectedPlan.id] && footprints[selectedPlan.id].length > 0 ? (
                 <div className="space-y-3 max-h-64 overflow-y-auto">
                   {footprints[selectedPlan.id].map((fp) => (
-                    <div key={fp.id} className="bg-gray-50 rounded-xl p-4 flex items-center justify-between">
-                      <div>
-                        <div className="font-bold text-gray-800 flex items-center gap-2">
-                          <DollarSign size={18} className="text-green-600" />
-                          ¥{fp.expense}
-                        </div>
-                        {fp.description && (
-                          <div className="text-sm text-gray-600">{fp.description}</div>
-                        )}
-                        <div className="text-xs text-gray-400 mt-1">
-                          {new Date(fp.createdAt).toLocaleString('zh-CN')}
-                        </div>
+                    <div key={fp.id} className="bg-gray-50 rounded-xl p-4">
+                      <div className="font-bold text-gray-800 flex items-center gap-2">
+                        <DollarSign size={18} className="text-green-600" />
+                        ¥{fp.expense}
                       </div>
-                      <div className="flex items-center gap-1 text-yellow-600 font-bold">
-                        <Star size={18} />
-                        <span>+{fp.starsEarned}</span>
+                      {fp.description && (
+                        <div className="text-sm text-gray-600 mt-1">{fp.description}</div>
+                      )}
+                      <div className="text-xs text-gray-400 mt-1">
+                        {new Date(fp.createdAt).toLocaleString('zh-CN')}
                       </div>
                     </div>
                   ))}
@@ -542,7 +528,6 @@ const TravelPlans = () => {
         <ul className="text-gray-600 space-y-1">
           <li>• 添加你想去的旅行目的地和预算</li>
           <li>• 在旅行中记录每一笔花费</li>
-          <li>• <span className="font-bold text-orange-600">1元 = 1颗星星</span>，记录花费就能获得星星奖励！</li>
           <li>• 旅行结束后，点击"<span className="font-bold text-green-600">标记为已完成</span>"按钮</li>
           <li>• 查看旅行足迹，回顾美好时光</li>
         </ul>

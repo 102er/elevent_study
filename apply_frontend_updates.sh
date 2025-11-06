@@ -40,10 +40,10 @@ if docker compose version &> /dev/null; then
     echo "   Windows/Linux: Ctrl + Shift + R"
     echo "   Mac: Cmd + Shift + R"
     echo ""
-    echo -e "${BLUE}新功能：${NC}"
-    echo "   ✅ 旅行完成标记"
+    echo -e "${BLUE}更新内容：${NC}"
+    echo "   ✅ 旅行完成标记功能"
     echo "   ✅ 点击已完成旅行标题查看足迹"
-    echo "   ✅ 查看旅行足迹按钮"
+    echo "   ✅ 移除旅行花费星星奖励"
     echo ""
 elif docker-compose version &> /dev/null; then
     # 尝试旧版 docker-compose
@@ -59,10 +59,10 @@ elif docker-compose version &> /dev/null; then
     echo "   Windows/Linux: Ctrl + Shift + R"
     echo "   Mac: Cmd + Shift + R"
     echo ""
-    echo -e "${BLUE}新功能：${NC}"
-    echo "   ✅ 旅行完成标记"
+    echo -e "${BLUE}更新内容：${NC}"
+    echo "   ✅ 旅行完成标记功能"
     echo "   ✅ 点击已完成旅行标题查看足迹"
-    echo "   ✅ 查看旅行足迹按钮"
+    echo "   ✅ 移除旅行花费星星奖励"
     echo ""
 else
     echo -e "${YELLOW}错误：未找到 docker compose 或 docker-compose 命令${NC}"

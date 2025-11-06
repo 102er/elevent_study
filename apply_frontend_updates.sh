@@ -24,27 +24,45 @@ if [ ! -f "docker-compose.yml" ]; then
     exit 1
 fi
 
-echo -e "${BLUE}正在重启前端容器...${NC}"
+echo -e "${BLUE}正在重新构建并重启前端容器...${NC}"
 
 # 尝试新版 docker compose
 if docker compose version &> /dev/null; then
-    docker compose restart frontend
+    docker compose build frontend
+    docker compose up -d frontend
     echo ""
-    echo -e "${GREEN}✅ 前端容器已重启！${NC}"
+    echo -e "${GREEN}✅ 前端已重新构建并启动！${NC}"
+    echo ""
+    echo -e "${YELLOW}⏳ 等待前端启动...${NC}"
+    sleep 5
     echo ""
     echo -e "${YELLOW}📱 请在浏览器中强制刷新页面：${NC}"
     echo "   Windows/Linux: Ctrl + Shift + R"
     echo "   Mac: Cmd + Shift + R"
+    echo ""
+    echo -e "${BLUE}新功能：${NC}"
+    echo "   ✅ 旅行完成标记"
+    echo "   ✅ 点击已完成旅行标题查看足迹"
+    echo "   ✅ 查看旅行足迹按钮"
     echo ""
 elif docker-compose version &> /dev/null; then
     # 尝试旧版 docker-compose
-    docker-compose restart frontend
+    docker-compose build frontend
+    docker-compose up -d frontend
     echo ""
-    echo -e "${GREEN}✅ 前端容器已重启！${NC}"
+    echo -e "${GREEN}✅ 前端已重新构建并启动！${NC}"
+    echo ""
+    echo -e "${YELLOW}⏳ 等待前端启动...${NC}"
+    sleep 5
     echo ""
     echo -e "${YELLOW}📱 请在浏览器中强制刷新页面：${NC}"
     echo "   Windows/Linux: Ctrl + Shift + R"
     echo "   Mac: Cmd + Shift + R"
+    echo ""
+    echo -e "${BLUE}新功能：${NC}"
+    echo "   ✅ 旅行完成标记"
+    echo "   ✅ 点击已完成旅行标题查看足迹"
+    echo "   ✅ 查看旅行足迹按钮"
     echo ""
 else
     echo -e "${YELLOW}错误：未找到 docker compose 或 docker-compose 命令${NC}"

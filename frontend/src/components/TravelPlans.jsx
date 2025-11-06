@@ -290,12 +290,25 @@ const TravelPlans = () => {
                 <div className="mb-2 bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-bold inline-flex items-center gap-1">
                   <CheckCircle size={16} />
                   已完成
+                  {plan.completedAt && (
+                    <span className="text-xs ml-2 opacity-75">
+                      {new Date(plan.completedAt).toLocaleDateString('zh-CN')}
+                    </span>
+                  )}
                 </div>
               )}
               
-              <div className="flex items-center gap-2 mb-4">
+              <div 
+                className={`flex items-center gap-2 mb-4 ${plan.isCompleted ? 'cursor-pointer hover:text-purple-700 transition-colors' : ''}`}
+                onClick={() => plan.isCompleted && handleViewFootprints(plan) && setShowFootprintForm(true)}
+              >
                 <MapPin size={24} className="text-purple-600" />
                 <h3 className="text-2xl font-bold text-gray-800">{plan.destination}</h3>
+                {plan.isCompleted && (
+                  <span className="text-sm text-blue-600 font-semibold ml-auto">
+                    点击查看足迹 →
+                  </span>
+                )}
               </div>
 
               {plan.budget > 0 && (
@@ -334,42 +347,80 @@ const TravelPlans = () => {
               </div>
 
               <div className="space-y-2">
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => {
-                      handleViewFootprints(plan)
-                      setShowFootprintForm(true)
-                    }}
-                    className="flex-1 bg-blue-500 text-white px-4 py-2 rounded-xl font-bold transition-all hover:scale-105 active:scale-95 text-sm"
-                  >
-                    记录花费
-                  </button>
-                  <button
-                    onClick={() => handleEdit(plan)}
-                    className="flex-1 bg-purple-500 text-white px-4 py-2 rounded-xl font-bold transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-1 text-sm"
-                  >
-                    <Edit2 size={16} />
-                    编辑
-                  </button>
-                  <button
-                    onClick={() => handleDelete(plan)}
-                    className="flex-1 bg-red-500 text-white px-4 py-2 rounded-xl font-bold transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-1 text-sm"
-                  >
-                    <Trash2 size={16} />
-                    删除
-                  </button>
-                </div>
-                <button
-                  onClick={() => handleToggleComplete(plan)}
-                  className={`w-full ${
-                    plan.isCompleted 
-                      ? 'bg-gradient-to-r from-gray-400 to-gray-500' 
-                      : 'bg-gradient-to-r from-green-400 to-green-600'
-                  } text-white px-4 py-2 rounded-xl font-bold transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2 text-sm shadow-md`}
-                >
-                  <CheckCircle size={16} />
-                  {plan.isCompleted ? '标记为未完成' : '标记为已完成'}
-                </button>
+                {plan.isCompleted ? (
+                  // 已完成的旅行显示查看足迹按钮
+                  <>
+                    <button
+                      onClick={() => {
+                        handleViewFootprints(plan)
+                        setShowFootprintForm(true)
+                      }}
+                      className="w-full bg-gradient-to-r from-blue-400 to-blue-600 text-white px-4 py-3 rounded-xl font-bold transition-all hover:scale-105 active:scale-95 text-sm shadow-md flex items-center justify-center gap-2"
+                    >
+                      <MapPin size={18} />
+                      查看旅行足迹
+                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleEdit(plan)}
+                        className="flex-1 bg-purple-500 text-white px-3 py-2 rounded-xl font-bold transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-1 text-sm"
+                      >
+                        <Edit2 size={14} />
+                        编辑
+                      </button>
+                      <button
+                        onClick={() => handleToggleComplete(plan)}
+                        className="flex-1 bg-gray-500 text-white px-3 py-2 rounded-xl font-bold transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-1 text-sm"
+                      >
+                        <CheckCircle size={14} />
+                        取消完成
+                      </button>
+                      <button
+                        onClick={() => handleDelete(plan)}
+                        className="flex-1 bg-red-500 text-white px-3 py-2 rounded-xl font-bold transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-1 text-sm"
+                      >
+                        <Trash2 size={14} />
+                        删除
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  // 未完成的旅行显示记录花费按钮
+                  <>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => {
+                          handleViewFootprints(plan)
+                          setShowFootprintForm(true)
+                        }}
+                        className="flex-1 bg-blue-500 text-white px-4 py-2 rounded-xl font-bold transition-all hover:scale-105 active:scale-95 text-sm"
+                      >
+                        记录花费
+                      </button>
+                      <button
+                        onClick={() => handleEdit(plan)}
+                        className="flex-1 bg-purple-500 text-white px-4 py-2 rounded-xl font-bold transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-1 text-sm"
+                      >
+                        <Edit2 size={16} />
+                        编辑
+                      </button>
+                      <button
+                        onClick={() => handleDelete(plan)}
+                        className="flex-1 bg-red-500 text-white px-4 py-2 rounded-xl font-bold transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-1 text-sm"
+                      >
+                        <Trash2 size={16} />
+                        删除
+                      </button>
+                    </div>
+                    <button
+                      onClick={() => handleToggleComplete(plan)}
+                      className="w-full bg-gradient-to-r from-green-400 to-green-600 text-white px-4 py-2 rounded-xl font-bold transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2 text-sm shadow-md"
+                    >
+                      <CheckCircle size={16} />
+                      标记为已完成
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           ))
@@ -380,12 +431,21 @@ const TravelPlans = () => {
       {showFootprintForm && selectedPlan && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-3xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto bounce-in">
-            <h3 className="text-2xl font-bold text-gray-800 mb-6">
-              ✈️ {selectedPlan.destination} - 旅行足迹
-            </h3>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-2xl font-bold text-gray-800">
+                ✈️ {selectedPlan.destination} - 旅行足迹
+              </h3>
+              {selectedPlan.isCompleted && (
+                <div className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-bold inline-flex items-center gap-1">
+                  <CheckCircle size={14} />
+                  已完成
+                </div>
+              )}
+            </div>
 
-            {/* 添加花费表单 */}
-            <form onSubmit={handleAddFootprint} className="bg-blue-50 rounded-2xl p-6 mb-6">
+            {/* 添加花费表单 - 只在未完成时显示 */}
+            {!selectedPlan.isCompleted && (
+              <form onSubmit={handleAddFootprint} className="bg-blue-50 rounded-2xl p-6 mb-6">
               <h4 className="text-xl font-bold text-gray-700 mb-4">记录新花费</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -420,10 +480,20 @@ const TravelPlans = () => {
                 添加花费记录
               </button>
             </form>
+            )}
 
             {/* 花费记录列表 */}
             <div className="mb-4">
-              <h4 className="text-xl font-bold text-gray-700 mb-4">历史记录</h4>
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="text-xl font-bold text-gray-700">
+                  {selectedPlan.isCompleted ? '旅行足迹回顾' : '历史记录'}
+                </h4>
+                {selectedPlan.isCompleted && footprints[selectedPlan.id] && (
+                  <div className="text-sm text-gray-600">
+                    共 {footprints[selectedPlan.id].length} 笔记录
+                  </div>
+                )}
+              </div>
               {footprints[selectedPlan.id] && footprints[selectedPlan.id].length > 0 ? (
                 <div className="space-y-3 max-h-64 overflow-y-auto">
                   {footprints[selectedPlan.id].map((fp) => (

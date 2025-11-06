@@ -138,6 +138,31 @@ const TravelPlans = () => {
     loadFootprints(plan.id)
   }
 
+  const handleToggleComplete = async (plan) => {
+    try {
+      const response = await fetch(`/api/travel-plans/${plan.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          destination: plan.destination,
+          budget: plan.budget,
+          startDate: plan.startDate,
+          endDate: plan.endDate,
+          notes: plan.notes,
+          isCompleted: !plan.isCompleted
+        })
+      })
+      
+      if (response.ok) {
+        await loadPlans()
+      } else {
+        alert('操作失败，请重试')
+      }
+    } catch (err) {
+      alert('操作失败，请重试')
+    }
+  }
+
   if (loading) {
     return (
       <div className="bg-white rounded-3xl p-12 shadow-lg text-center">
@@ -308,29 +333,42 @@ const TravelPlans = () => {
                 </div>
               </div>
 
-              <div className="flex gap-2">
+              <div className="space-y-2">
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      handleViewFootprints(plan)
+                      setShowFootprintForm(true)
+                    }}
+                    className="flex-1 bg-blue-500 text-white px-4 py-2 rounded-xl font-bold transition-all hover:scale-105 active:scale-95 text-sm"
+                  >
+                    记录花费
+                  </button>
+                  <button
+                    onClick={() => handleEdit(plan)}
+                    className="flex-1 bg-purple-500 text-white px-4 py-2 rounded-xl font-bold transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-1 text-sm"
+                  >
+                    <Edit2 size={16} />
+                    编辑
+                  </button>
+                  <button
+                    onClick={() => handleDelete(plan)}
+                    className="flex-1 bg-red-500 text-white px-4 py-2 rounded-xl font-bold transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-1 text-sm"
+                  >
+                    <Trash2 size={16} />
+                    删除
+                  </button>
+                </div>
                 <button
-                  onClick={() => {
-                    handleViewFootprints(plan)
-                    setShowFootprintForm(true)
-                  }}
-                  className="flex-1 bg-blue-500 text-white px-4 py-2 rounded-xl font-bold transition-all hover:scale-105 active:scale-95 text-sm"
+                  onClick={() => handleToggleComplete(plan)}
+                  className={`w-full ${
+                    plan.isCompleted 
+                      ? 'bg-gradient-to-r from-gray-400 to-gray-500' 
+                      : 'bg-gradient-to-r from-green-400 to-green-600'
+                  } text-white px-4 py-2 rounded-xl font-bold transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2 text-sm shadow-md`}
                 >
-                  记录花费
-                </button>
-                <button
-                  onClick={() => handleEdit(plan)}
-                  className="flex-1 bg-purple-500 text-white px-4 py-2 rounded-xl font-bold transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-1 text-sm"
-                >
-                  <Edit2 size={16} />
-                  编辑
-                </button>
-                <button
-                  onClick={() => handleDelete(plan)}
-                  className="flex-1 bg-red-500 text-white px-4 py-2 rounded-xl font-bold transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-1 text-sm"
-                >
-                  <Trash2 size={16} />
-                  删除
+                  <CheckCircle size={16} />
+                  {plan.isCompleted ? '标记为未完成' : '标记为已完成'}
                 </button>
               </div>
             </div>
@@ -435,6 +473,7 @@ const TravelPlans = () => {
           <li>• 添加你想去的旅行目的地和预算</li>
           <li>• 在旅行中记录每一笔花费</li>
           <li>• <span className="font-bold text-orange-600">1元 = 1颗星星</span>，记录花费就能获得星星奖励！</li>
+          <li>• 旅行结束后，点击"<span className="font-bold text-green-600">标记为已完成</span>"按钮</li>
           <li>• 查看旅行足迹，回顾美好时光</li>
         </ul>
       </div>

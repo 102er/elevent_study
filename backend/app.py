@@ -300,6 +300,71 @@ def get_stars():
     star_record = StarRecord.query.first()
     return jsonify({'stars': star_record.stars if star_record else 0})
 
+@app.route('/api/stars/daily-stats', methods=['GET'])
+def get_daily_stars_stats():
+    """获取每日星星获取统计（最近30天）"""
+    try:
+        # 获取最近30天的日期范围
+        end_date = datetime.now().date()
+        start_date = end_date - timedelta(days=29)  # 30天数据
+        
+        # 初始化每日统计字典
+        daily_stats = {}
+        current_date = start_date
+        while current_date <= end_date:
+            daily_stats[current_date.isoformat()] = {
+                'date': current_date.isoformat(),
+                'characters': 0,  # 识字获得
+                'poems': 0,       # 古诗获得
+                'tasks': 0,       # 任务获得
+                'total': 0        # 总计
+            }
+            current_date += timedelta(days=1)
+        
+        # 统计识字星星（每个汉字1星）
+        learning_records = LearningRecord.query.filter(
+            LearningRecord.learned_at >= start_date,
+            LearningRecord.learned_at <= end_date
+        ).all()
+        
+        for record in learning_records:
+            date_key = record.learned_at.date().isoformat()
+            if date_key in daily_stats:
+                daily_stats[date_key]['characters'] += 1
+                daily_stats[date_key]['total'] += 1
+        
+        # 统计古诗星星（每首5星）
+        poems = Poem.query.filter(
+            Poem.completed_at.isnot(None),
+            func.date(Poem.completed_at) >= start_date,
+            func.date(Poem.completed_at) <= end_date
+        ).all()
+        
+        for poem in poems:
+            date_key = poem.completed_at.date().isoformat()
+            if date_key in daily_stats:
+                daily_stats[date_key]['poems'] += 5
+                daily_stats[date_key]['total'] += 5
+        
+        # 统计任务星星
+        task_completions = TaskCompletion.query.filter(
+            func.date(TaskCompletion.completed_at) >= start_date,
+            func.date(TaskCompletion.completed_at) <= end_date
+        ).all()
+        
+        for completion in task_completions:
+            date_key = completion.completed_at.date().isoformat()
+            if date_key in daily_stats:
+                daily_stats[date_key]['tasks'] += completion.stars_earned
+                daily_stats[date_key]['total'] += completion.stars_earned
+        
+        # 转换为列表并排序
+        result = sorted(daily_stats.values(), key=lambda x: x['date'])
+        
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/api/stars/reset', methods=['POST'])
 def reset_stars():
     """重置所有进度"""

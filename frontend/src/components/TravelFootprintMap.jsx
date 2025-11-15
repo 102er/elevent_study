@@ -4,9 +4,11 @@ import { MapPin, Users, Calendar, Award } from 'lucide-react'
 const TravelFootprintMap = () => {
   const [plans, setPlans] = useState([])
   const [loading, setLoading] = useState(true)
+  const [totalStars, setTotalStars] = useState(0)
 
   useEffect(() => {
     loadPlans()
+    loadStars()
   }, [])
 
   const loadPlans = async () => {
@@ -23,9 +25,19 @@ const TravelFootprintMap = () => {
     }
   }
 
+  const loadStars = async () => {
+    try {
+      const response = await fetch('/api/stars')
+      const data = await response.json()
+      setTotalStars(data.stars || 0)
+    } catch (err) {
+      console.error('加载星星总数失败:', err)
+    }
+  }
+
   // 计算总统计
   const totalDestinations = plans.length
-  const totalExpense = plans.reduce((sum, p) => sum + p.totalExpense, 0)
+  const totalExpense = plans.reduce((sum, p) => sum + (p.totalExpense || 0), 0)
 
   if (loading) {
     return (

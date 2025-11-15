@@ -10,6 +10,19 @@ const LearningMode = ({ words, markAsLearned }) => {
   // 只显示未学习的汉字
   const unlearnedWords = words.filter(w => !w.learned)
 
+  // 当unlearnedWords变化时（比如某个字被标记为已学习），自动调整索引
+  useEffect(() => {
+    // 使用函数式更新来访问最新的currentIndex值
+    setCurrentIndex(prevIndex => {
+      // 如果当前索引超出范围，重置为最后一个有效索引（或0）
+      if (unlearnedWords.length > 0 && prevIndex >= unlearnedWords.length) {
+        return Math.max(0, unlearnedWords.length - 1)
+      }
+      // 否则保持索引不变（这样会自动显示下一个字）
+      return prevIndex
+    })
+  }, [unlearnedWords.length]) // 只依赖数组长度，避免循环
+
   const handleNext = () => {
     if (currentIndex < unlearnedWords.length - 1) {
       setCurrentIndex(currentIndex + 1)
@@ -40,9 +53,8 @@ const LearningMode = ({ words, markAsLearned }) => {
       setTimeout(() => {
         setCelebrationMode(false)
         setStars([])
-        if (unlearnedWords.length > 1) {
-          handleNext()
-        }
+        // 标记为已学习后，当前字会被从unlearnedWords中移除
+        // useEffect会自动调整currentIndex，所以这里不需要手动调用handleNext()
       }, 2000)
     } catch (err) {
       // 错误已在父组件处理

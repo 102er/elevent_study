@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { BookOpen, Library, GraduationCap, Star, Calendar, Book, Sparkles, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Menu, PenTool, Plane, FileText, CheckSquare, Gift, Award, MapPin } from 'lucide-react'
+import { BookOpen, Library, GraduationCap, Star, Calendar, Book, Sparkles, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Menu, PenTool, Plane, FileText, CheckSquare, Gift, Award, MapPin, TrendingUp } from 'lucide-react'
 
 const Sidebar = ({ currentView, setCurrentView }) => {
   const [isCollapsed, setIsCollapsed] = useState(false)
@@ -45,15 +45,16 @@ const Sidebar = ({ currentView, setCurrentView }) => {
         { id: 'tasks', label: '日常任务', icon: CheckSquare },
       ]
     },
-    {
-      id: 'rewards',
-      title: '我的奖励',
-      icon: Award,
-      items: [
-        { id: 'my-rewards', label: '成就徽章', icon: Star },
-        { id: 'star-exchange', label: '星星兑换', icon: Gift },
-      ]
-    }
+          {
+            id: 'rewards',
+            title: '我的奖励',
+            icon: Award,
+            items: [
+              { id: 'my-rewards', label: '成就徽章', icon: Star },
+              { id: 'stars-chart', label: '星星统计', icon: TrendingUp },
+              { id: 'star-exchange', label: '星星兑换', icon: Gift },
+            ]
+          }
   ]
 
   const toggleSection = (sectionId) => {

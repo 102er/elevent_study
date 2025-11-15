@@ -13,6 +13,7 @@ import PoemsManagement from './components/PoemsManagement'
 import DailyTasks from './components/DailyTasks'
 import MyRewards from './components/MyRewards'
 import StarExchange from './components/StarExchange'
+import StarsChart from './components/StarsChart'
 import { wordAPI, learningAPI, starAPI } from './services/api'
 
 function App() {
@@ -219,6 +220,10 @@ function App() {
 
           {currentView === 'star-exchange' && (
             <StarExchange stars={stars} onRefresh={loadData} />
+          )}
+
+          {currentView === 'stars-chart' && (
+            <StarsChart />
           )}
         </div>
       </div>

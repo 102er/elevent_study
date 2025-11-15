@@ -44,6 +44,7 @@ if docker compose version &> /dev/null; then
     echo "   ✅ 旅行完成标记功能"
     echo "   ✅ 点击已完成旅行标题查看足迹"
     echo "   ✅ 移除旅行花费星星奖励"
+    echo "   ✅ 新增星星获取统计图表"
     echo ""
 elif docker-compose version &> /dev/null; then
     # 尝试旧版 docker-compose
@@ -63,6 +64,7 @@ elif docker-compose version &> /dev/null; then
     echo "   ✅ 旅行完成标记功能"
     echo "   ✅ 点击已完成旅行标题查看足迹"
     echo "   ✅ 移除旅行花费星星奖励"
+    echo "   ✅ 新增星星获取统计图表"
     echo ""
 else
     echo -e "${YELLOW}错误：未找到 docker compose 或 docker-compose 命令${NC}"
